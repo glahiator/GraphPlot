@@ -21,18 +21,24 @@ public:
     ~GraphPlot();
 
     void DebugSlot();
+    void StartTimer();
     void timerHandler();
+
+    void Set1Graph();
 
 private:
     Ui::GraphPlot *ui;
     QTimer * timer;
-    QLineSeries *series;
-    QSplineSeries *series1;
-    QValueAxis *ax_X;
+    QLineSeries *seriesPistonLeft;
+    QLineSeries *seriesPistonRight;
+    QDateTimeAxis *ax_X;
     QValueAxis *ax_Y;
-    QChart *chart;
+    QChart *chartPiston; // график процента потерь расхода в поршневой полости
+    QChart *chartRod; // график процента потерь расхода в штоковой полости
+
     double prev_x;
     double prev_y;
+    QDateTime time;
 
 
 };

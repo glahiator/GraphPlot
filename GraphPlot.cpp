@@ -9,65 +9,15 @@ GraphPlot::GraphPlot(QWidget *parent)
 
     timer = new QTimer();
     timer->stop();
-    timer->setInterval(100);
+    timer->setInterval(1);
     connect( timer, &QTimer::timeout, this, &GraphPlot::timerHandler );
-    timer->start();
-
-    series = new QLineSeries();
-//    QPen green(Qt::red);
-//    green.setWidth(1);
-//    series->setPen(green);
-    series->append(0, 6);
-    series->append(2, 4);
-    series->append(3, 8);
-    series->append(7, 4);
-    series->append(10, 5);
-    *series << QPointF(11, 1) << QPointF(13, 3) << QPointF(17, 6) << QPointF(18, 3) << QPointF(20, 2);
-
-    series1 = new QSplineSeries();
-    series1->append(0, 6);
-    series1->append(2, 4);
-    series1->append(3, 8);
-    series1->append(7, 4);
-    series1->append(10, 5);
-    *series1 << QPointF(11, 1) << QPointF(13, 3)
-             << QPointF(17, 6) << QPointF(18, 3) << QPointF(20, 2);
-
-    prev_x = 20;
-    prev_y = 2;
-    series->append(prev_x, prev_y);
-    series1->append(prev_x, prev_y);
-
-    ax_X = new QValueAxis;
-    ax_Y = new QValueAxis;
-
-    chart = new QChart();
-    chart->legend()->hide();
-    chart->addSeries(series);
-    chart->addSeries(series1);
-    chart->addAxis(ax_X, Qt::AlignBottom);
-    chart->addAxis(ax_Y, Qt::AlignLeft);
-//    chart->setAnimationOptions(QChart::SeriesAnimations);
+    //timer->start();
 
 
-    series->attachAxis( ax_X );
-    series->attachAxis( ax_Y );
-    series1->attachAxis( ax_X );
-    series1->attachAxis( ax_Y );
-
-    ax_X->setRange(0, 25);
-    ax_Y->setRange(-10, 10);
-    ax_X->setTickCount(11);
-    ax_Y->setTickCount(10);
-    chart->setTitle("Simple line chart example");
-
-    ui->graphicsView->setChart(chart);
-    ui->graphicsView->setRenderHint(QPainter::Antialiasing);
-    ui->graphicsView->setRubberBand( QChartView::RectangleRubberBand );
+    Set1Graph();
 
     connect( ui->btn_debug, &QPushButton::clicked, this, &GraphPlot::DebugSlot );
-
-
+    connect( ui->pushButton, &QPushButton::clicked, this, &GraphPlot::StartTimer );
 }
 
 GraphPlot::~GraphPlot()
@@ -80,18 +30,93 @@ void GraphPlot::DebugSlot()
     timer->stop();
 }
 
+void GraphPlot::StartTimer()
+{
+    timer->start();
+}
+
+
 void GraphPlot::timerHandler()
 {
-    static int counter = 0;
-    counter++;
+    time = time.addSecs(1);
 
-    qreal x = chart->plotArea().width() / ax_X->tickCount();
-    qreal y = (ax_X->max() - ax_X->min()) / ax_X->tickCount();
-    prev_x += y;
-    prev_y = QRandomGenerator::global()->bounded(10) - 2.5;
-    series->append(prev_x, prev_y);
-    series1->append(prev_x, prev_y);
-    chart->scroll(x, 0);
+    prev_y = QRandomGenerator::global()->bounded(1,10) ;
+    seriesPistonLeft->append(time.toMSecsSinceEpoch(), prev_y);
+    prev_y = QRandomGenerator::global()->bounded(1,10) ;
+    seriesPistonRight->append(time.toMSecsSinceEpoch(), prev_y);
+    chartPiston->scroll(131.75, 0);
+}
 
+void GraphPlot::Set1Graph()
+{
+    seriesPistonLeft = new QLineSeries();
+//    QPen green(Qt::red);
+//    green.setWidth(1);
+//    series->setPen(green);
+    seriesPistonLeft->setName("Левый");
+
+    seriesPistonRight = new QLineSeries();
+    seriesPistonRight->setName("Правый");;
+
+    time.setDate(QDateTime::currentDateTime().date());
+    time.setTime(QTime(13,10,0));
+    QDateTime temp_time = time;
+
+    seriesPistonLeft->append(time.toMSecsSinceEpoch(), 2);
+    seriesPistonRight->append(time.toMSecsSinceEpoch(), 1);
+    time.setTime(QTime(13,10,1));
+    seriesPistonLeft->append(time.toMSecsSinceEpoch(), 4);
+    seriesPistonRight->append(time.toMSecsSinceEpoch(), 5);
+    time.setTime(QTime(13,10,2));
+    seriesPistonLeft->append(time.toMSecsSinceEpoch(), 8);
+    seriesPistonRight->append(time.toMSecsSinceEpoch(), 7);
+    time.setTime(QTime(13,10,3));
+    seriesPistonLeft->append(time.toMSecsSinceEpoch(), 4);
+    seriesPistonRight->append(time.toMSecsSinceEpoch(), 5);
+    time.setTime(QTime(13,10,4));
+    seriesPistonLeft->append(time.toMSecsSinceEpoch(), 5);
+    seriesPistonRight->append(time.toMSecsSinceEpoch(), 6);
+
+    time.setTime(QTime(13,10,5));
+    prev_x = time.toMSecsSinceEpoch();
+    prev_y = 6;
+    seriesPistonLeft->append(prev_x, prev_y);
+    seriesPistonRight->append(prev_x, prev_y);
+
+    ax_X = new QDateTimeAxis;
+    ax_Y = new QValueAxis;
+    ax_X->setTitleText("Время, мин");
+    ax_X->setFormat("hh:mm:ss.zzz");
+    ax_Y->setTitleText("Потери, %");
+
+    chartPiston = new QChart();
+    chartPiston->legend()->setAlignment(Qt::AlignRight);
+    chartPiston->legend()->show();
+    chartPiston->addSeries(seriesPistonLeft);
+    chartPiston->addSeries(seriesPistonRight);
+    chartPiston->addAxis(ax_X, Qt::AlignBottom);
+    chartPiston->addAxis(ax_Y, Qt::AlignLeft);
+//    chart->setAnimationOptions(QChart::SeriesAnimations);
+
+
+    seriesPistonLeft->attachAxis( ax_X );
+    seriesPistonLeft->attachAxis( ax_Y );
+    seriesPistonRight->attachAxis( ax_X );
+    seriesPistonRight->attachAxis( ax_Y );
+
+
+    QDateTime temp_time_finish;
+    temp_time_finish.setDate(QDateTime::currentDateTime().date());
+    temp_time_finish.setTime(QTime(13,10,6));
+
+    ax_X->setRange(temp_time, temp_time_finish);
+    ax_Y->setRange(0, 15);
+    ax_X->setTickCount(7);
+    ax_Y->setTickCount(4);
+    chartPiston->setTitle("Процент потерь расхода в поршневой полости");
+
+    ui->graphView1->setChart(chartPiston);
+    ui->graphView1->setRenderHint(QPainter::Antialiasing);
+    ui->graphView1->setRubberBand( QChartView::RectangleRubberBand );
 }
 
