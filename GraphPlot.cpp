@@ -11,14 +11,14 @@ GraphPlot::GraphPlot(QWidget *parent)
     timer->stop();
     timer->setInterval(100);
     connect( timer, &QTimer::timeout, this, &GraphPlot::handlePistonPlot );
-//    connect( timer, &QTimer::timeout, this, &GraphPlot::handleRodPlot );
-//    connect( timer, &QTimer::timeout, this, &GraphPlot::handleForcePlot );
+    connect( timer, &QTimer::timeout, this, &GraphPlot::handleRodPlot );
+    connect( timer, &QTimer::timeout, this, &GraphPlot::handleForcePlot );
     //timer->start();
 
 
     SetGraphPiston();
-//    SetGraphRod();
-//    SetGraphForce();
+    SetGraphRod();
+    SetGraphForce();
 
     connect( ui->btn_debug, &QPushButton::clicked, this, &GraphPlot::DebugSlot );
     connect( ui->pushButton, &QPushButton::clicked, this, &GraphPlot::StartTimer );
