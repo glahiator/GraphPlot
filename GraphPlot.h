@@ -33,10 +33,16 @@ public:
 private Q_SLOTS:
     void updateUI();
 
+    void on_action_13_triggered();
+
+    void on_action_14_triggered();
+
 private:
     Ui::GraphPlot *ui;
     QTimer * timer;
 
+    int counter;
+    bool switcher;
     QLineSeries *seriesPistonLeft;
     QLineSeries *seriesPistonRight;
     QDateTimeAxis *ax_X_Piston;

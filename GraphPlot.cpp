@@ -6,6 +6,8 @@ GraphPlot::GraphPlot(QWidget *parent)
     , ui(new Ui::GraphPlot)
 {
     ui->setupUi(this);
+    counter = 0;
+    switcher = false;
 
     timer = new QTimer();
     timer->stop();
@@ -18,12 +20,10 @@ GraphPlot::GraphPlot(QWidget *parent)
     QDateTime all(QDateTime::currentDateTime().date(), QTime(13,10,0));
     timePiston = timeRod = timeForce = all;
 
-    SetGraphPiston();
-    SetGraphRod();
-    SetGraphForce();
 
-    connect( ui->btn_debug, &QPushButton::clicked, this, &GraphPlot::DebugSlot );
-    connect( ui->pushButton, &QPushButton::clicked, this, &GraphPlot::StartTimer );
+
+//    connect( ui->btn_debug, &QPushButton::clicked, this, &GraphPlot::DebugSlot );
+//    connect( ui->pushButton, &QPushButton::clicked, this, &GraphPlot::StartTimer );
 
     ui->themeComboBox->addItem("Light", QChart::ChartThemeLight);
     ui->themeComboBox->addItem("Blue Cerulean", QChart::ChartThemeBlueCerulean);
@@ -34,6 +34,7 @@ GraphPlot::GraphPlot(QWidget *parent)
     ui->themeComboBox->addItem("Blue Icy", QChart::ChartThemeBlueIcy);
     ui->themeComboBox->addItem("Qt", QChart::ChartThemeQt);
 
+//    ui->themeComboBox->setCurrentIndex(4);
     connect( ui->themeComboBox, qOverload<int>(&QComboBox::currentIndexChanged), this, &GraphPlot::updateUI );
 
     QPalette pal = qApp->palette();
@@ -109,10 +110,27 @@ void GraphPlot::StartTimer()
 
 void GraphPlot::handlePistonPlot()
 {
-    timePiston = timePiston.addSecs(1);
-    seriesPistonLeft->append(timePiston.toMSecsSinceEpoch(),  QRandomGenerator::global()->bounded(1,10));
-    seriesPistonRight->append(timePiston.toMSecsSinceEpoch(),  QRandomGenerator::global()->bounded(1,10));
+    counter++;
+
+    timePiston = timePiston.addSecs(1);    
+
+    if(counter > 100 ){
+
+        if( !switcher ){
+            ui->graphView1->chart()->setTheme(QChart::ChartThemeBlueCerulean);
+            switcher = true;
+        }
+        seriesPistonLeft->append(timePiston.toMSecsSinceEpoch(), 14);
+        seriesPistonRight->append(timePiston.toMSecsSinceEpoch(),  QRandomGenerator::global()->bounded(1,10));
+    }else{
+        seriesPistonLeft->append(timePiston.toMSecsSinceEpoch(), QRandomGenerator::global()->bounded(1,10));
+        seriesPistonRight->append(timePiston.toMSecsSinceEpoch(),  QRandomGenerator::global()->bounded(1,10));
+    }
+
+    double val = ui->graphView1->chart()->plotArea().width() / ax_X_Piston->tickCount();
+//    qDebug() << counter;// ui->graphView1->chart()->plotArea().width() << ax_X_Piston->tickCount() ;
     chartPiston->scroll(131.75, 0);
+
 }
 
 void GraphPlot::handleRodPlot()
@@ -167,7 +185,7 @@ void GraphPlot::SetGraphPiston()
     ax_X_Piston = new QDateTimeAxis;
     ax_Y_Piston = new QValueAxis;
     ax_X_Piston->setTitleText("Время, мин");
-    ax_X_Piston->setFormat("hh:mm:ss");
+    ax_X_Piston->setFormat("hh:mm:ss.z");
     ax_Y_Piston->setTitleText("Потери, %");
 
     chartPiston = new QChart();
@@ -342,5 +360,27 @@ void GraphPlot::SetGraphForce()
     ui->graphView3->setChart(chartForce);
     ui->graphView3->setRenderHint(QPainter::Antialiasing);
     ui->graphView3->setRubberBand( QChartView::RectangleRubberBand );
+}
+
+
+void GraphPlot::on_action_13_triggered()
+{
+    static bool sw = false;
+    if( !sw ){
+        SetGraphPiston();
+        SetGraphRod();
+        SetGraphForce();
+        sw = true;
+    }
+
+    timer->start();
+}
+
+
+void GraphPlot::on_action_14_triggered()
+{
+    timer->stop();
+    counter = 0;
+    switcher = false;
 }
 
