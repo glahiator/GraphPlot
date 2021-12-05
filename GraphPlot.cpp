@@ -15,6 +15,8 @@ GraphPlot::GraphPlot(QWidget *parent)
     connect( timer, &QTimer::timeout, this, &GraphPlot::handleForcePlot );
     //timer->start();
 
+    QDateTime all(QDateTime::currentDateTime().date(), QTime(13,10,0));
+    timePiston = timeRod = timeForce = all;
 
     SetGraphPiston();
     SetGraphRod();
@@ -108,33 +110,24 @@ void GraphPlot::StartTimer()
 void GraphPlot::handlePistonPlot()
 {
     timePiston = timePiston.addSecs(1);
-
-    prev_y = QRandomGenerator::global()->bounded(1,10) ;
-    seriesPistonLeft->append(timePiston.toMSecsSinceEpoch(), prev_y);
-    prev_y = QRandomGenerator::global()->bounded(1,10) ;
-    seriesPistonRight->append(timePiston.toMSecsSinceEpoch(), prev_y);
+    seriesPistonLeft->append(timePiston.toMSecsSinceEpoch(),  QRandomGenerator::global()->bounded(1,10));
+    seriesPistonRight->append(timePiston.toMSecsSinceEpoch(),  QRandomGenerator::global()->bounded(1,10));
     chartPiston->scroll(131.75, 0);
 }
 
 void GraphPlot::handleRodPlot()
 {
     timeRod = timeRod.addSecs(1);
-
-    double prev_y = QRandomGenerator::global()->bounded(1,10) ;
-    seriesRodLeft->append(timeRod.toMSecsSinceEpoch(), prev_y);
-    prev_y = QRandomGenerator::global()->bounded(1,10) ;
-    seriesRodRight->append(timeRod.toMSecsSinceEpoch(), prev_y);
+    seriesRodLeft->append(timeRod.toMSecsSinceEpoch(),  QRandomGenerator::global()->bounded(1,10));
+    seriesRodRight->append(timeRod.toMSecsSinceEpoch(),  QRandomGenerator::global()->bounded(1,10));
     chartRod->scroll(131.75, 0);
 }
 
 void GraphPlot::handleForcePlot()
 {
     timeForce = timeForce.addSecs(1);
-
-    double prev_y = QRandomGenerator::global()->bounded(1,10) ;
-    seriesForceLeft->append(timeForce.toMSecsSinceEpoch(), prev_y);
-    prev_y = QRandomGenerator::global()->bounded(1,10) ;
-    seriesForceRight->append(timeForce.toMSecsSinceEpoch(), prev_y);
+    seriesForceLeft->append(timeForce.toMSecsSinceEpoch(),  QRandomGenerator::global()->bounded(1,10));
+    seriesForceRight->append(timeForce.toMSecsSinceEpoch(),  QRandomGenerator::global()->bounded(1,10));
     chartForce->scroll(131.75, 0);
 }
 
@@ -146,33 +139,30 @@ void GraphPlot::SetGraphPiston()
 //    series->setPen(green);
     seriesPistonLeft->setName("Левый");
 
-    seriesPistonRight = new QSplineSeries();
+    seriesPistonRight = new QLineSeries();
     seriesPistonRight->setName("Правый");;
 
-    timePiston.setDate(QDateTime::currentDateTime().date());
-    timePiston.setTime(QTime(13,10,0));
+
     QDateTime temp_time = timePiston;
 
     seriesPistonLeft->append(timePiston.toMSecsSinceEpoch(), 2);
     seriesPistonRight->append(timePiston.toMSecsSinceEpoch(), 1);
-    timePiston.setTime(QTime(13,10,1));
+    timePiston = timePiston.addSecs(1);
     seriesPistonLeft->append(timePiston.toMSecsSinceEpoch(), 4);
     seriesPistonRight->append(timePiston.toMSecsSinceEpoch(), 5);
-    timePiston.setTime(QTime(13,10,2));
+    timePiston = timePiston.addSecs(1);
     seriesPistonLeft->append(timePiston.toMSecsSinceEpoch(), 8);
     seriesPistonRight->append(timePiston.toMSecsSinceEpoch(), 7);
-    timePiston.setTime(QTime(13,10,3));
+    timePiston = timePiston.addSecs(1);
     seriesPistonLeft->append(timePiston.toMSecsSinceEpoch(), 4);
     seriesPistonRight->append(timePiston.toMSecsSinceEpoch(), 5);
-    timePiston.setTime(QTime(13,10,4));
+    timePiston = timePiston.addSecs(1);
     seriesPistonLeft->append(timePiston.toMSecsSinceEpoch(), 5);
     seriesPistonRight->append(timePiston.toMSecsSinceEpoch(), 6);
 
-    timePiston.setTime(QTime(13,10,5));
-    prev_x = timePiston.toMSecsSinceEpoch();
-    prev_y = 6;
-    seriesPistonLeft->append(prev_x, prev_y);
-    seriesPistonRight->append(prev_x, prev_y);
+    timePiston = timePiston.addSecs(1);
+    seriesPistonLeft->append(timePiston.toMSecsSinceEpoch(), 7);
+    seriesPistonRight->append(timePiston.toMSecsSinceEpoch(), 7);
 
     ax_X_Piston = new QDateTimeAxis;
     ax_Y_Piston = new QValueAxis;
@@ -196,9 +186,9 @@ void GraphPlot::SetGraphPiston()
     seriesPistonRight->attachAxis( ax_Y_Piston );
 
 
-    QDateTime temp_time_finish;
-    temp_time_finish.setDate(QDateTime::currentDateTime().date());
-    temp_time_finish.setTime(QTime(13,10,6));
+    QDateTime temp_time_finish = timePiston.addSecs(1);
+//    temp_time_finish.setDate(timePiston.date());
+//    temp_time_finish.setTime(QTime(13,10,6));
 
     ax_X_Piston->setRange(temp_time, temp_time_finish);
     ax_Y_Piston->setRange(0, 15);
@@ -222,8 +212,7 @@ void GraphPlot::SetGraphRod()
     seriesRodRight = new QSplineSeries();
     seriesRodRight->setName("Правый");;
 
-    timeRod.setDate(QDateTime::currentDateTime().date());
-    timeRod.setTime(QTime(13,10,0));
+
     QDateTime temp_time = timeRod;
 
     seriesRodLeft->append(timeRod.toMSecsSinceEpoch(), 2);
@@ -250,7 +239,7 @@ void GraphPlot::SetGraphRod()
     ax_X_Rod = new QDateTimeAxis;
     ax_Y_Rod = new QValueAxis;
     ax_X_Rod->setTitleText("Время, мин");
-    ax_X_Rod->setFormat("hh:mm:ss");
+    ax_X_Rod->setFormat("hh:mm:ss.z");
     ax_Y_Rod->setTitleText("Потери, %");
 
     chartRod = new QChart();
@@ -262,12 +251,10 @@ void GraphPlot::SetGraphRod()
     chartRod->addAxis(ax_Y_Rod, Qt::AlignLeft);
     //    chart->setAnimationOptions(QChart::SeriesAnimations);
 
-
     seriesRodLeft->attachAxis( ax_X_Rod );
     seriesRodLeft->attachAxis( ax_Y_Rod );
     seriesRodRight->attachAxis( ax_X_Rod );
     seriesRodRight->attachAxis( ax_Y_Rod );
-
 
     QDateTime temp_time_finish;
     temp_time_finish.setDate(QDateTime::currentDateTime().date());
@@ -296,8 +283,7 @@ void GraphPlot::SetGraphForce()
     seriesForceRight = new QSplineSeries();
     seriesForceRight->setName("Правый");;
 
-    timeForce.setDate(QDateTime::currentDateTime().date());
-    timeForce.setTime(QTime(13,10,0));
+
     QDateTime temp_time = timeForce;
 
     seriesForceLeft->append(timeForce.toMSecsSinceEpoch(), 2);
@@ -324,8 +310,8 @@ void GraphPlot::SetGraphForce()
     ax_X_Force = new QDateTimeAxis;
     ax_Y_Force = new QValueAxis;
     ax_X_Force->setTitleText("Время, мин");
-    ax_X_Force->setFormat("hh:mm:ss");
-    ax_Y_Force->setTitleText("Потери, %");
+    ax_X_Force->setFormat("hh:mm:ss.z");
+    ax_Y_Force->setTitleText("Отношение");
 
     chartForce = new QChart();
     chartForce->legend()->setAlignment(Qt::AlignRight);
@@ -348,10 +334,10 @@ void GraphPlot::SetGraphForce()
     temp_time_finish.setTime(QTime(13,10,6));
 
     ax_X_Force->setRange(temp_time, temp_time_finish);
-    ax_Y_Force->setRange(0, 15);
+    ax_Y_Force->setRange(0, 20);
     ax_X_Force->setTickCount(7);
     ax_Y_Force->setTickCount(4);
-    chartForce->setTitle("Процент потерь расхода в штоковой полости");
+    chartForce->setTitle("Отношение эталонного дифф. усилия к реальному");
 
     ui->graphView3->setChart(chartForce);
     ui->graphView3->setRenderHint(QPainter::Antialiasing);

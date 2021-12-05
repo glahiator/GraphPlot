@@ -38,7 +38,7 @@ private:
     QTimer * timer;
 
     QLineSeries *seriesPistonLeft;
-    QSplineSeries *seriesPistonRight;
+    QLineSeries *seriesPistonRight;
     QDateTimeAxis *ax_X_Piston;
     QValueAxis *ax_Y_Piston;
     QChart *chartPiston; // график процента потерь расхода в поршневой полости
