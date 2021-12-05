@@ -22,9 +22,11 @@ public:
 
     void DebugSlot();
     void StartTimer();
-    void timerHandler();
+    void handlePistonPlot();
+    void handleRodPlot();
 
-    void Set1Graph();
+    void SetGraphPiston();
+    void SetGraphRod();
 
 private Q_SLOTS:
     void updateUI();
@@ -32,16 +34,24 @@ private Q_SLOTS:
 private:
     Ui::GraphPlot *ui;
     QTimer * timer;
+
     QLineSeries *seriesPistonLeft;
-    QLineSeries *seriesPistonRight;
-    QDateTimeAxis *ax_X;
-    QValueAxis *ax_Y;
+    QSplineSeries *seriesPistonRight;
+    QDateTimeAxis *ax_X_Piston;
+    QValueAxis *ax_Y_Piston;
     QChart *chartPiston; // график процента потерь расхода в поршневой полости
+    QDateTime timePiston;
+
+    QLineSeries *seriesRodLeft;
+    QSplineSeries *seriesRodRight;
+    QDateTimeAxis *ax_X_Rod;
+    QValueAxis *ax_Y_Rod;
     QChart *chartRod; // график процента потерь расхода в штоковой полости
+    QDateTime timeRod;
+
 
     double prev_x;
-    double prev_y;
-    QDateTime time;
+    double prev_y;;
 
 
 };
