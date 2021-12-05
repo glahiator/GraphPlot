@@ -26,6 +26,9 @@ public:
 
     void Set1Graph();
 
+private Q_SLOTS:
+    void updateUI();
+
 private:
     Ui::GraphPlot *ui;
     QTimer * timer;

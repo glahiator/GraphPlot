@@ -9,7 +9,7 @@ GraphPlot::GraphPlot(QWidget *parent)
 
     timer = new QTimer();
     timer->stop();
-    timer->setInterval(1);
+    timer->setInterval(100);
     connect( timer, &QTimer::timeout, this, &GraphPlot::timerHandler );
     //timer->start();
 
@@ -18,12 +18,75 @@ GraphPlot::GraphPlot(QWidget *parent)
 
     connect( ui->btn_debug, &QPushButton::clicked, this, &GraphPlot::DebugSlot );
     connect( ui->pushButton, &QPushButton::clicked, this, &GraphPlot::StartTimer );
+
+    ui->themeComboBox->addItem("Light", QChart::ChartThemeLight);
+    ui->themeComboBox->addItem("Blue Cerulean", QChart::ChartThemeBlueCerulean);
+    ui->themeComboBox->addItem("Dark", QChart::ChartThemeDark);
+    ui->themeComboBox->addItem("Brown Sand", QChart::ChartThemeBrownSand);
+    ui->themeComboBox->addItem("Blue NCS", QChart::ChartThemeBlueNcs);
+    ui->themeComboBox->addItem("High Contrast", QChart::ChartThemeHighContrast);
+    ui->themeComboBox->addItem("Blue Icy", QChart::ChartThemeBlueIcy);
+    ui->themeComboBox->addItem("Qt", QChart::ChartThemeQt);
+
+    connect( ui->themeComboBox, qOverload<int>(&QComboBox::currentIndexChanged), this, &GraphPlot::updateUI );
+
+    QPalette pal = qApp->palette();
+    pal.setColor(QPalette::Window, QRgb(0xf0f0f0));
+    pal.setColor(QPalette::WindowText, QRgb(0x404044));
+    qApp->setPalette(pal);
+
+    updateUI();
 }
 
 GraphPlot::~GraphPlot()
 {
     delete ui;
 }
+
+void GraphPlot::updateUI()
+{
+    //![6]
+    QChart::ChartTheme theme = static_cast<QChart::ChartTheme>(
+                ui->themeComboBox->itemData(ui->themeComboBox->currentIndex()).toInt());
+    //![6]
+
+    //![7]
+    ui->graphView1->chart()->setTheme(theme);
+    //![7]
+
+
+    // Set palette colors based on selected theme
+    //![8]
+    QPalette pal = window()->palette();
+    if (theme == QChart::ChartThemeLight) {
+        pal.setColor(QPalette::Window, QRgb(0xf0f0f0));
+        pal.setColor(QPalette::WindowText, QRgb(0x404044));
+        //![8]
+    } else if (theme == QChart::ChartThemeDark) {
+        pal.setColor(QPalette::Window, QRgb(0x121218));
+        pal.setColor(QPalette::WindowText, QRgb(0xd6d6d6));
+    } else if (theme == QChart::ChartThemeBlueCerulean) {
+        pal.setColor(QPalette::Window, QRgb(0x40434a));
+        pal.setColor(QPalette::WindowText, QRgb(0xd6d6d6));
+    } else if (theme == QChart::ChartThemeBrownSand) {
+        pal.setColor(QPalette::Window, QRgb(0x9e8965));
+        pal.setColor(QPalette::WindowText, QRgb(0x404044));
+    } else if (theme == QChart::ChartThemeBlueNcs) {
+        pal.setColor(QPalette::Window, QRgb(0x018bba));
+        pal.setColor(QPalette::WindowText, QRgb(0x404044));
+    } else if (theme == QChart::ChartThemeHighContrast) {
+        pal.setColor(QPalette::Window, QRgb(0xffab03));
+        pal.setColor(QPalette::WindowText, QRgb(0x181818));
+    } else if (theme == QChart::ChartThemeBlueIcy) {
+        pal.setColor(QPalette::Window, QRgb(0xcee7f0));
+        pal.setColor(QPalette::WindowText, QRgb(0x404044));
+    } else {
+        pal.setColor(QPalette::Window, QRgb(0xf0f0f0));
+        pal.setColor(QPalette::WindowText, QRgb(0x404044));
+    }
+    window()->setPalette(pal);
+}
+
 
 void GraphPlot::DebugSlot()
 {

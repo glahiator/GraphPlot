@@ -65,6 +65,9 @@
        </widget>
       </item>
       <item>
+       <widget class="QComboBox" name="themeComboBox"/>
+      </item>
+      <item>
        <widget class="QLineEdit" name="lineEdit">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
