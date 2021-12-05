@@ -24,9 +24,11 @@ public:
     void StartTimer();
     void handlePistonPlot();
     void handleRodPlot();
+    void handleForcePlot();
 
     void SetGraphPiston();
     void SetGraphRod();
+    void SetGraphForce();
 
 private Q_SLOTS:
     void updateUI();
@@ -48,6 +50,13 @@ private:
     QValueAxis *ax_Y_Rod;
     QChart *chartRod; // график процента потерь расхода в штоковой полости
     QDateTime timeRod;
+
+    QLineSeries *seriesForceLeft;
+    QSplineSeries *seriesForceRight;
+    QDateTimeAxis *ax_X_Force;
+    QValueAxis *ax_Y_Force;
+    QChart *chartForce; // график процента потерь расхода в штоковой полости
+    QDateTime timeForce;
 
 
     double prev_x;

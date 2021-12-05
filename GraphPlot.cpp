@@ -11,12 +11,14 @@ GraphPlot::GraphPlot(QWidget *parent)
     timer->stop();
     timer->setInterval(100);
     connect( timer, &QTimer::timeout, this, &GraphPlot::handlePistonPlot );
-    connect( timer, &QTimer::timeout, this, &GraphPlot::handleRodPlot );
+//    connect( timer, &QTimer::timeout, this, &GraphPlot::handleRodPlot );
+//    connect( timer, &QTimer::timeout, this, &GraphPlot::handleForcePlot );
     //timer->start();
 
 
     SetGraphPiston();
-    SetGraphRod();
+//    SetGraphRod();
+//    SetGraphForce();
 
     connect( ui->btn_debug, &QPushButton::clicked, this, &GraphPlot::DebugSlot );
     connect( ui->pushButton, &QPushButton::clicked, this, &GraphPlot::StartTimer );
@@ -125,6 +127,17 @@ void GraphPlot::handleRodPlot()
     chartRod->scroll(131.75, 0);
 }
 
+void GraphPlot::handleForcePlot()
+{
+    timeForce = timeForce.addSecs(1);
+
+    double prev_y = QRandomGenerator::global()->bounded(1,10) ;
+    seriesForceLeft->append(timeForce.toMSecsSinceEpoch(), prev_y);
+    prev_y = QRandomGenerator::global()->bounded(1,10) ;
+    seriesForceRight->append(timeForce.toMSecsSinceEpoch(), prev_y);
+    chartForce->scroll(131.75, 0);
+}
+
 void GraphPlot::SetGraphPiston()
 {
     seriesPistonLeft = new QLineSeries();
@@ -200,8 +213,6 @@ void GraphPlot::SetGraphPiston()
 
 void GraphPlot::SetGraphRod()
 {
-
-
     seriesRodLeft = new QLineSeries();
     //    QPen green(Qt::red);
     //    green.setWidth(1);
@@ -271,5 +282,79 @@ void GraphPlot::SetGraphRod()
     ui->graphView2->setChart(chartRod);
     ui->graphView2->setRenderHint(QPainter::Antialiasing);
     ui->graphView2->setRubberBand( QChartView::RectangleRubberBand );
+}
+
+void GraphPlot::SetGraphForce()
+{
+
+    seriesForceLeft = new QLineSeries();
+    //    QPen green(Qt::red);
+    //    green.setWidth(1);
+    //    series->setPen(green);
+    seriesForceLeft->setName("Левый");
+
+    seriesForceRight = new QSplineSeries();
+    seriesForceRight->setName("Правый");;
+
+    timeForce.setDate(QDateTime::currentDateTime().date());
+    timeForce.setTime(QTime(13,10,0));
+    QDateTime temp_time = timeForce;
+
+    seriesForceLeft->append(timeForce.toMSecsSinceEpoch(), 2);
+    seriesForceRight->append(timeForce.toMSecsSinceEpoch(), 1);
+    timeForce.setTime(QTime(13,10,1));
+    seriesForceLeft->append(timeForce.toMSecsSinceEpoch(), 4);
+    seriesForceRight->append(timeForce.toMSecsSinceEpoch(), 5);
+    timeForce.setTime(QTime(13,10,2));
+    seriesForceLeft->append(timeForce.toMSecsSinceEpoch(), 8);
+    seriesForceRight->append(timeForce.toMSecsSinceEpoch(), 7);
+    timeForce.setTime(QTime(13,10,3));
+    seriesForceLeft->append(timeForce.toMSecsSinceEpoch(), 4);
+    seriesForceRight->append(timeForce.toMSecsSinceEpoch(), 5);
+    timeForce.setTime(QTime(13,10,4));
+    seriesForceLeft->append(timeForce.toMSecsSinceEpoch(), 5);
+    seriesForceRight->append(timeForce.toMSecsSinceEpoch(), 6);
+
+    timeForce.setTime(QTime(13,10,5));
+    prev_x = timeForce.toMSecsSinceEpoch();
+    prev_y = 6;
+    seriesForceLeft->append(prev_x, prev_y);
+    seriesForceRight->append(prev_x, prev_y);
+
+    ax_X_Force = new QDateTimeAxis;
+    ax_Y_Force = new QValueAxis;
+    ax_X_Force->setTitleText("Время, мин");
+    ax_X_Force->setFormat("hh:mm:ss");
+    ax_Y_Force->setTitleText("Потери, %");
+
+    chartForce = new QChart();
+    chartForce->legend()->setAlignment(Qt::AlignRight);
+    chartForce->legend()->show();
+    chartForce->addSeries(seriesForceLeft);
+    chartForce->addSeries(seriesForceRight);
+    chartForce->addAxis(ax_X_Force, Qt::AlignBottom);
+    chartForce->addAxis(ax_Y_Force, Qt::AlignLeft);
+    //    chart->setAnimationOptions(QChart::SeriesAnimations);
+
+
+    seriesForceLeft->attachAxis( ax_X_Force );
+    seriesForceLeft->attachAxis( ax_Y_Force );
+    seriesForceRight->attachAxis( ax_X_Force );
+    seriesForceRight->attachAxis( ax_Y_Force );
+
+
+    QDateTime temp_time_finish;
+    temp_time_finish.setDate(QDateTime::currentDateTime().date());
+    temp_time_finish.setTime(QTime(13,10,6));
+
+    ax_X_Force->setRange(temp_time, temp_time_finish);
+    ax_Y_Force->setRange(0, 15);
+    ax_X_Force->setTickCount(7);
+    ax_Y_Force->setTickCount(4);
+    chartForce->setTitle("Процент потерь расхода в штоковой полости");
+
+    ui->graphView3->setChart(chartForce);
+    ui->graphView3->setRenderHint(QPainter::Antialiasing);
+    ui->graphView3->setRubberBand( QChartView::RectangleRubberBand );
 }
 
