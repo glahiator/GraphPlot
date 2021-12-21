@@ -8,6 +8,8 @@
 #include <QtCharts/QChartView>
 #include <QtCharts/QLineSeries>
 
+#include "SensorConnector.h"
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class GraphPlot; }
 QT_END_NAMESPACE
@@ -30,6 +32,9 @@ public:
     void SetGraphRod();
     void SetGraphForce();
 
+    void SensorDataUpdate( SensorPack pack );
+    void SetCheck( bool is_value );
+
 private Q_SLOTS:
     void updateUI();
 
@@ -37,9 +42,12 @@ private Q_SLOTS:
 
     void on_action_14_triggered();
 
+
 private:
     Ui::GraphPlot *ui;
     QTimer * timer;
+
+    SensorConnector * sensor;
 
     int counter;
     bool switcher;
@@ -66,7 +74,9 @@ private:
 
 
     double prev_x;
-    double prev_y;;
+    double prev_y;
+
+    bool is_Check;
 
 
 };

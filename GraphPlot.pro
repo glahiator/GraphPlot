@@ -1,4 +1,4 @@
-QT       += core gui charts
+QT       += core gui charts network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -9,11 +9,15 @@ CONFIG += c++14
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    SensorConnector.cpp \
+    Utilites.cpp \
     main.cpp \
     GraphPlot.cpp
 
 HEADERS += \
-    GraphPlot.h
+    GraphPlot.h \
+    SensorConnector.h \
+    Utilites.h
 
 FORMS += \
     GraphPlot.ui
