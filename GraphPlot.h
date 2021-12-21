@@ -52,14 +52,14 @@ private:
     int counter;
     bool switcher;
     QLineSeries *seriesPistonLeft;
-    QLineSeries *seriesPistonRight;
+//    QLineSeries *seriesPistonRight;
     QDateTimeAxis *ax_X_Piston;
     QValueAxis *ax_Y_Piston;
     QChart *chartPiston; // график процента потерь расхода в поршневой полости
     QDateTime timePiston;
 
     QLineSeries *seriesRodLeft;
-    QLineSeries *seriesRodRight;
+//    QLineSeries *seriesRodRight;
     QDateTimeAxis *ax_X_Rod;
     QValueAxis *ax_Y_Rod;
     QChart *chartRod; // график процента потерь расхода в штоковой полости

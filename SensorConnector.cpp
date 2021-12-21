@@ -40,6 +40,7 @@ void SensorConnector::Receive()
     previousTime = GetCurrentTime1();
 
     QByteArray datagram;
+//    qDebug() << "HERE";
 
     if (socket->hasPendingDatagrams())
     {
