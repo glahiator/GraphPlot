@@ -10,6 +10,15 @@ GraphPlot::GraphPlot(QWidget *parent)
     switcher = false;
     is_Check = false;
 
+    is_new_piston = false;
+    is_new_rod = false;
+    is_new_force = false;
+
+    adc_val_1 = 0.0;
+    adc_val_2 = 0.0;
+    adc_filt_val_1 = 0.0;
+    adc_filt_val_2 = 0.0 ;
+
     sensor = new SensorConnector(2607, QHostAddress("192.168.26.20"), 8888, this);
     connect( sensor, &SensorConnector::sensorPackReceive, this, &GraphPlot::SensorDataUpdate );
 
@@ -121,9 +130,10 @@ void GraphPlot::handlePistonPlot()
     qreal x = ui->graphView1->chart()->plotArea().width() / ax_X_Piston->tickCount();
     qreal y = (ax_X_Piston->max().toMSecsSinceEpoch() - ax_X_Piston->min().toMSecsSinceEpoch()) / ax_X_Piston->tickCount();
     timePiston = timePiston.addMSecs(y);
-    if( is_Check ){
-        seriesPistonLeft->append(timePiston.toMSecsSinceEpoch(),  QRandomGenerator::global()->bounded(1,10));
-        seriesPistonRight->append(timePiston.toMSecsSinceEpoch(),  QRandomGenerator::global()->bounded(1,10));
+    if( is_new_piston ){
+        seriesPistonLeft->append(timePiston.toMSecsSinceEpoch(),  adc_val_1);
+        seriesPistonRight->append(timePiston.toMSecsSinceEpoch(),  adc_val_2);
+        is_new_piston = false;
     }
     chartPiston->scroll(x, 0);
 }
@@ -133,9 +143,10 @@ void GraphPlot::handleRodPlot()
     qreal x = ui->graphView2->chart()->plotArea().width() / ax_X_Rod->tickCount();
     qreal y = (ax_X_Rod->max().toMSecsSinceEpoch() - ax_X_Rod->min().toMSecsSinceEpoch()) / ax_X_Rod->tickCount();
     timeRod = timeRod.addMSecs(y);
-    if( is_Check ){
-        seriesRodLeft->append(timeRod.toMSecsSinceEpoch(),  QRandomGenerator::global()->bounded(1,10));
-        seriesRodRight->append(timeRod.toMSecsSinceEpoch(),  QRandomGenerator::global()->bounded(1,10));
+    if( is_new_rod ){
+        seriesRodLeft->append(timeRod.toMSecsSinceEpoch(),  adc_filt_val_1);
+        seriesRodRight->append(timeRod.toMSecsSinceEpoch(),  adc_filt_val_2);
+        is_new_rod = false;
     }
     chartRod->scroll(x, 0);
 }
@@ -145,8 +156,11 @@ void GraphPlot::handleForcePlot()
     qreal x = ui->graphView3->chart()->plotArea().width() / ax_X_Force->tickCount();
     qreal y = (ax_X_Force->max().toMSecsSinceEpoch() - ax_X_Force->min().toMSecsSinceEpoch()) / ax_X_Force->tickCount();
     timeForce = timeForce.addMSecs(y);
-    seriesForceLeft->append(timeForce.toMSecsSinceEpoch(),  QRandomGenerator::global()->bounded(1,10));
-    seriesForceRight->append(timeForce.toMSecsSinceEpoch(),  QRandomGenerator::global()->bounded(1,10));
+    if( is_new_rod ){
+
+    }
+//    seriesForceLeft->append(timeForce.toMSecsSinceEpoch(),  QRandomGenerator::global()->bounded(1,10));
+//    seriesForceRight->append(timeForce.toMSecsSinceEpoch(),  QRandomGenerator::global()->bounded(1,10));
     chartForce->scroll(x, 0);
 }
 
@@ -181,7 +195,7 @@ void GraphPlot::SetGraphPiston()
     chartPiston->addSeries(seriesPistonRight);
     chartPiston->addAxis(ax_X_Piston, Qt::AlignBottom);
     chartPiston->addAxis(ax_Y_Piston, Qt::AlignLeft);
-//    chart->setAnimationOptions(QChart::SeriesAnimations);
+    chartPiston->setAnimationOptions(QChart::SeriesAnimations);
 
     seriesPistonLeft->attachAxis( ax_X_Piston );
     seriesPistonLeft->attachAxis( ax_Y_Piston );
@@ -189,7 +203,7 @@ void GraphPlot::SetGraphPiston()
     seriesPistonRight->attachAxis( ax_Y_Piston );
 
     ax_X_Piston->setRange(temp_time, timePiston.addSecs(1));
-    ax_Y_Piston->setRange(0, 15);
+    ax_Y_Piston->setRange(900, 1300);
     ax_X_Piston->setTickCount(10);
     ax_Y_Piston->setTickCount(4);
     chartPiston->setTitle("Процент потерь расхода в поршневой полости");
@@ -206,7 +220,7 @@ void GraphPlot::SetGraphRod()
     //    series->setPen(green);
     seriesRodLeft->setName("Левый");
 
-    seriesRodRight = new QSplineSeries();
+    seriesRodRight = new QLineSeries();
     seriesRodRight->setName("Правый");
 
     QDateTime temp_time = timeRod;
@@ -233,7 +247,7 @@ void GraphPlot::SetGraphRod()
     chartRod->addSeries(seriesRodRight);
     chartRod->addAxis(ax_X_Rod, Qt::AlignBottom);
     chartRod->addAxis(ax_Y_Rod, Qt::AlignLeft);
-    //    chart->setAnimationOptions(QChart::SeriesAnimations);
+    chartRod->setAnimationOptions(QChart::SeriesAnimations);
 
     seriesRodLeft->attachAxis( ax_X_Rod );
     seriesRodLeft->attachAxis( ax_Y_Rod );
@@ -241,7 +255,7 @@ void GraphPlot::SetGraphRod()
     seriesRodRight->attachAxis( ax_Y_Rod );
 
     ax_X_Rod->setRange(temp_time, timeRod.addSecs(1));
-    ax_Y_Rod->setRange(0, 15);
+    ax_Y_Rod->setRange(500, 1800);
     ax_X_Rod->setTickCount(10);
     ax_Y_Rod->setTickCount(4);
     chartRod->setTitle("Процент потерь расхода в штоковой полости");
@@ -305,11 +319,13 @@ void GraphPlot::SetGraphForce()
 
 void GraphPlot::SensorDataUpdate(SensorPack pack)
 {
-    seriesPistonLeft->append(timePiston.toMSecsSinceEpoch(),  pack.adc1_data.at( ui->cb_adc1_priston->currentIndex() ));
-    seriesPistonRight->append(timePiston.toMSecsSinceEpoch(), pack.adc3_data.at( ui->cb_adc3_priston->currentIndex() ));
+    adc_val_1 = pack.adc1_data.at( ui->cb_adc1_priston->currentIndex() );
+    adc_val_2 = pack.adc3_data.at( ui->cb_adc3_priston->currentIndex() );
+    is_new_piston = true;
 
-    seriesRodLeft->append(timeRod.toMSecsSinceEpoch(),        pack.adc1_filtered_data.at( ui->cb_adc1_filtered->currentIndex() ));
-    seriesRodRight->append(timeRod.toMSecsSinceEpoch(),       pack.adc3_filtered_data.at( ui->cb_adc3_filtered->currentIndex() ));
+    adc_filt_val_1 = pack.adc1_filtered_data.at( ui->cb_adc1_filtered->currentIndex() );
+    adc_filt_val_2 = pack.adc3_filtered_data.at( ui->cb_adc3_filtered->currentIndex() );
+    is_new_rod = true;
 
     seriesForceLeft->append(timeForce.toMSecsSinceEpoch(),    pack.adc1_data.at(4));
     seriesForceRight->append(timeForce.toMSecsSinceEpoch(),   pack.adc1_data.at(5));

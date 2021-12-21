@@ -59,7 +59,7 @@ private:
     QDateTime timePiston;
 
     QLineSeries *seriesRodLeft;
-    QSplineSeries *seriesRodRight;
+    QLineSeries *seriesRodRight;
     QDateTimeAxis *ax_X_Rod;
     QValueAxis *ax_Y_Rod;
     QChart *chartRod; // график процента потерь расхода в штоковой полости
@@ -77,6 +77,14 @@ private:
     double prev_y;
 
     bool is_Check;
+
+    bool is_new_piston;
+    qreal adc_val_1;
+    qreal adc_val_2;
+    qreal adc_filt_val_1;
+    qreal adc_filt_val_2;
+    bool is_new_rod;
+    bool is_new_force;
 
 
 };

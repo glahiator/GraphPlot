@@ -43,7 +43,7 @@ private:
     quint32 packNumber;
     quint32 millisec;
 
-    quint32 previousTime;
+    qint64 previousTime;
 
 
 };

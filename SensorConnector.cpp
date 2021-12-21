@@ -23,6 +23,11 @@ SensorConnector::SensorConnector( quint16 _bind_port, QHostAddress _host, quint1
     timer->stop();
     timer->setInterval(1000);
     connect( timer, &QTimer::timeout, this, &SensorConnector::SendReceivedPack );
+    adc1_data.resize(10);
+    adc3_data.resize(10);
+    adc1_filtered_data.resize(10);
+    adc3_filtered_data.resize(10);
+    timer->start(1000);
 }
 
 SensorConnector::~SensorConnector()
@@ -100,6 +105,7 @@ void SensorConnector::SendReceivedPack()
     qint64 currentTime = GetCurrentTime1();
     if ( currentTime - previousTime > 500 )
     {
+//        qDebug() << currentTime  <<  previousTime << GetCurrentTime1();
         return;
     }
     else
