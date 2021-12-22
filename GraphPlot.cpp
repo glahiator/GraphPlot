@@ -282,7 +282,21 @@ void GraphPlot::handleCalcTabPlot()
 
         is_PLC_CALC_new_data = false;
     }else{
-        ser_piston_loss_left->append(timePistonLoss.toMSecsSinceEpoch(), QRandomGenerator::global()->bounded(0,20));
+
+        qreal val = QRandomGenerator::global()->bounded(0,20);
+        if( val < 10 ){
+            QPen green(Qt::green);
+            green.setWidth(3);
+            ser_piston_loss_left->setPen(green);
+        }
+        else{
+            QPen green(Qt::red);
+            green.setWidth(1);
+            ser_piston_loss_left->setPen(green);
+        }
+
+
+        ser_piston_loss_left->append(timePistonLoss.toMSecsSinceEpoch(), val);
         ser_piston_loss_right->append(timePistonLoss.toMSecsSinceEpoch(), QRandomGenerator::global()->bounded(0,20));
         ser_Stock_loss_left->append(timeStockLoss.toMSecsSinceEpoch(), QRandomGenerator::global()->bounded(0,20));
         ser_Stock_loss_right->append(timeStockLoss.toMSecsSinceEpoch(), QRandomGenerator::global()->bounded(0,20));
