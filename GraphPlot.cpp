@@ -19,11 +19,15 @@ GraphPlot::GraphPlot(QWidget *parent)
     adc_filt_val_1 = 0.0;
     adc_filt_val_2 = 0.0 ;
 
+    is_PLC_CALC_new_data = false;
+    is_PLC_new_data_left = false;
+    is_PLC_new_data_right = false;
+
     sensor = new SensorConnector(2607, QHostAddress("192.168.1.20"), 8888, this);
     connect( sensor, &SensorConnector::sensorPackReceive, this, &GraphPlot::SensorDataUpdate );
 
     plc = new PLC_Connector(2688, QHostAddress("192.168.1.30"), 8888, this);
-    connect( plc, &PLC_Connector::plcPackReceive, this, &GraphPlot::PLC_DataUpdate );
+    connect( plc, &PLC_Connector::plcDataReceive, this, &GraphPlot::PLC_DataUpdate );
 
     QDateTime all(QDateTime::currentDateTime().date(), QDateTime::currentDateTime().time().addSecs(-10));
     timePiston = timeRod = timeLeftPressure = timeLeftZadan = timeLeftZolotPosit = timeLeftShtokPosit = timeRightPressure
@@ -174,81 +178,122 @@ void GraphPlot::handleForcePlot()
     qreal x = ui->graphView3->chart()->plotArea().width() / ax_X_LeftPressure->tickCount();
     qreal y = (ax_X_LeftPressure->max().toMSecsSinceEpoch() - ax_X_LeftPressure->min().toMSecsSinceEpoch()) / ax_X_LeftPressure->tickCount();
     timeLeftPressure = timeLeftPressure.addMSecs(y);
-//    if( is_new_rod ){
-
-//    }
-    ser_left_piston_pressure->append(timeLeftPressure.toMSecsSinceEpoch(),  QRandomGenerator::global()->bounded(1,250));
-    ser_left_rod_pressure->append(timeLeftPressure.toMSecsSinceEpoch(),  QRandomGenerator::global()->bounded(1,250));
-    chartLeftPressure->scroll(x, 0);
-
 
     qreal x_zadan = ui->tab_left_gv_zadan_klapan->chart()->plotArea().width() / ax_X_LeftZadan->tickCount();
     qreal y_zadan = ( ax_X_LeftZadan->max().toMSecsSinceEpoch() - ax_X_LeftZadan->min().toMSecsSinceEpoch() ) / ax_X_LeftZadan->tickCount();
     timeLeftZadan = timeLeftZadan.addMSecs(y_zadan);
-    ser_left_zadan->append( timeLeftZadan.toMSecsSinceEpoch(),  QRandomGenerator::global()->bounded(-100,100));
-    chartLeftZadan->scroll( x_zadan, 0 );
 
     qreal x_zolot = ui->tab_left_gv_zolot_position->chart()->plotArea().width() / ax_X_LeftZolotPosit->tickCount();
     qreal y_zolot = ( ax_X_LeftZolotPosit->max().toMSecsSinceEpoch() - ax_X_LeftZolotPosit->min().toMSecsSinceEpoch() ) / ax_X_LeftZolotPosit->tickCount();
     timeLeftZolotPosit = timeLeftZolotPosit.addMSecs(y_zolot);
-    ser_left_ZolotPosit->append(timeLeftZolotPosit.toMSecsSinceEpoch(), QRandomGenerator::global()->bounded(-100,100));
-    chartLeftZolotPosit->scroll( x_zolot, 0 );
 
     qreal x_shtok = ui->tab_left_gv_position_shtok->chart()->plotArea().width() / ax_X_LeftShtokPosit->tickCount();
     qreal y_shtok = ( ax_X_LeftShtokPosit->max().toMSecsSinceEpoch() - ax_X_LeftShtokPosit->min().toMSecsSinceEpoch() ) / ax_X_LeftShtokPosit->tickCount();
     timeLeftShtokPosit = timeLeftShtokPosit.addMSecs(y_shtok);
-    ser_left_ShtokPosit->append(timeLeftShtokPosit.toMSecsSinceEpoch(), QRandomGenerator::global()->bounded(0,25));
+
+    if( is_PLC_new_data_left ){
+        ser_left_piston_pressure->append(timeLeftPressure.toMSecsSinceEpoch(),  plc_Data.left.pA);
+        ser_left_rod_pressure->append(   timeLeftPressure.toMSecsSinceEpoch(), plc_Data.left.pB );
+        ser_left_zadan->append( timeLeftZadan.toMSecsSinceEpoch(),  plc_Data.left.sY);
+        ser_left_ZolotPosit->append(timeLeftZolotPosit.toMSecsSinceEpoch(), plc_Data.left.fY);
+        ser_left_ShtokPosit->append(timeLeftShtokPosit.toMSecsSinceEpoch(), plc_Data.left.fS);
+
+        is_PLC_new_data_left = false;
+    }
+    else{
+        ser_left_piston_pressure->append(timeLeftPressure.toMSecsSinceEpoch(),  QRandomGenerator::global()->bounded(1,250));
+        ser_left_rod_pressure->append(timeLeftPressure.toMSecsSinceEpoch(),  QRandomGenerator::global()->bounded(1,250));
+        ser_left_zadan->append( timeLeftZadan.toMSecsSinceEpoch(),  QRandomGenerator::global()->bounded(-100,100));
+        ser_left_ZolotPosit->append(timeLeftZolotPosit.toMSecsSinceEpoch(), QRandomGenerator::global()->bounded(-100,100));
+        ser_left_ShtokPosit->append(timeLeftShtokPosit.toMSecsSinceEpoch(), QRandomGenerator::global()->bounded(0,25));
+    }
+
     chartLeftShtokPosit->scroll( x_shtok, 0 );
+    chartLeftPressure->scroll(x, 0);
+    chartLeftZadan->scroll( x_zadan, 0 );
+    chartLeftZolotPosit->scroll( x_zolot, 0 );
+
 }
 void GraphPlot::handleRightTabPlot()
 {
     qreal x = ui->tab_right_gv_pressure->chart()->plotArea().width() / ax_X_RightPressure->tickCount();
     qreal y = (ax_X_RightPressure->max().toMSecsSinceEpoch() - ax_X_RightPressure->min().toMSecsSinceEpoch()) / ax_X_RightPressure->tickCount();
     timeRightPressure = timeRightPressure.addMSecs(y);
-    ser_right_piston_pressure->append(timeRightPressure.toMSecsSinceEpoch(),  QRandomGenerator::global()->bounded(1,250));
-    ser_right_rod_pressure->append(timeRightPressure.toMSecsSinceEpoch(),  QRandomGenerator::global()->bounded(1,250));
-    chartRightPressure->scroll(x, 0);
 
     qreal x_zadan = ui->tab_right_gv_zadan_klapan->chart()->plotArea().width() / ax_X_RightZadan->tickCount();
     qreal y_zadan = ( ax_X_RightZadan->max().toMSecsSinceEpoch() - ax_X_RightZadan->min().toMSecsSinceEpoch() ) / ax_X_RightZadan->tickCount();
     timeRightZadan = timeRightZadan.addMSecs(y_zadan);
-    ser_right_zadan->append( timeRightZadan.toMSecsSinceEpoch(),  QRandomGenerator::global()->bounded(-100,100));
-    chartRightZadan->scroll( x_zadan, 0 );
 
     qreal x_zolot = ui->tab_right_gv_zolot_position->chart()->plotArea().width() / ax_X_RightZolotPosit->tickCount();
     qreal y_zolot = ( ax_X_RightZolotPosit->max().toMSecsSinceEpoch() - ax_X_RightZolotPosit->min().toMSecsSinceEpoch() ) / ax_X_RightZolotPosit->tickCount();
     timeRightZolotPosit = timeRightZolotPosit.addMSecs(y_zolot);
-    ser_right_ZolotPosit->append(timeRightZolotPosit.toMSecsSinceEpoch(), QRandomGenerator::global()->bounded(-100,100));
-    chartRightZolotPosit->scroll( x_zolot, 0 );
 
     qreal x_shtok = ui->tab_right_gv_position_shtok->chart()->plotArea().width() / ax_X_RightShtokPosit->tickCount();
     qreal y_shtok = ( ax_X_RightShtokPosit->max().toMSecsSinceEpoch() - ax_X_RightShtokPosit->min().toMSecsSinceEpoch() ) / ax_X_RightShtokPosit->tickCount();
     timeRightShtokPosit = timeRightShtokPosit.addMSecs(y_shtok);
-    ser_right_ShtokPosit->append(timeRightShtokPosit.toMSecsSinceEpoch(), QRandomGenerator::global()->bounded(0,25));
+
+    if( is_PLC_new_data_right ){
+        ser_right_piston_pressure->append(timeRightPressure.toMSecsSinceEpoch(),  plc_Data.right.pA);
+        ser_right_rod_pressure->append(   timeRightPressure.toMSecsSinceEpoch(), plc_Data.right.pB );
+        ser_right_zadan->append( timeRightZadan.toMSecsSinceEpoch(),  plc_Data.right.sY);
+        ser_right_ZolotPosit->append(timeRightZolotPosit.toMSecsSinceEpoch(), plc_Data.right.fY);
+        ser_right_ShtokPosit->append(timeRightShtokPosit.toMSecsSinceEpoch(), plc_Data.right.fS);
+
+        is_PLC_new_data_right = false;
+    }
+    else{
+        ser_right_piston_pressure->append(timeRightPressure.toMSecsSinceEpoch(),  QRandomGenerator::global()->bounded(1,250));
+        ser_right_rod_pressure->append(timeRightPressure.toMSecsSinceEpoch(),  QRandomGenerator::global()->bounded(1,250));
+        ser_right_zadan->append( timeRightZadan.toMSecsSinceEpoch(),  QRandomGenerator::global()->bounded(-100,100));
+        ser_right_ZolotPosit->append(timeRightZolotPosit.toMSecsSinceEpoch(), QRandomGenerator::global()->bounded(-100,100));
+        ser_right_ShtokPosit->append(timeRightShtokPosit.toMSecsSinceEpoch(), QRandomGenerator::global()->bounded(0,25));
+
+    }
+
     chartRightShtokPosit->scroll( x_shtok, 0 );
+    chartRightPressure->scroll(x, 0);
+    chartRightZadan->scroll( x_zadan, 0 );
+    chartRightZolotPosit->scroll( x_zolot, 0 );
 }
 void GraphPlot::handleCalcTabPlot()
 {
     qreal x_PistonLoss = ui->tab_calc_gv_piston_loss->chart()->plotArea().width() / ax_X_PistonLoss->tickCount();
     qreal y_PistonLoss = ( ax_X_PistonLoss->max().toMSecsSinceEpoch() - ax_X_PistonLoss->min().toMSecsSinceEpoch() ) / ax_X_PistonLoss->tickCount();
     timePistonLoss = timePistonLoss.addMSecs(y_PistonLoss);
-    ser_piston_loss_left->append(timePistonLoss.toMSecsSinceEpoch(), QRandomGenerator::global()->bounded(0,20));
-    ser_piston_loss_right->append(timePistonLoss.toMSecsSinceEpoch(), QRandomGenerator::global()->bounded(0,20));
-    chartPistonLoss->scroll( x_PistonLoss, 0 );
 
     qreal x_StockLoss = ui->tab_calc_gv_stock_loss->chart()->plotArea().width() / ax_X_StockLoss->tickCount();
     qreal y_StockLoss = ( ax_X_StockLoss->max().toMSecsSinceEpoch() - ax_X_StockLoss->min().toMSecsSinceEpoch() ) / ax_X_StockLoss->tickCount();
     timeStockLoss = timeStockLoss.addMSecs(y_StockLoss);
-    ser_Stock_loss_left->append(timeStockLoss.toMSecsSinceEpoch(), QRandomGenerator::global()->bounded(0,20));
-    ser_Stock_loss_right->append(timeStockLoss.toMSecsSinceEpoch(), QRandomGenerator::global()->bounded(0,20));
-    chartStockLoss->scroll( x_StockLoss, 0 );
 
     qreal x_DiffForce = ui->tab_calc_gv_diff_force->chart()->plotArea().width() / ax_X_DiffForce->tickCount();
     qreal y_DiffForce = ( ax_X_DiffForce->max().toMSecsSinceEpoch() - ax_X_DiffForce->min().toMSecsSinceEpoch() ) / ax_X_DiffForce->tickCount();
     timeDiffForce = timeDiffForce.addMSecs(y_DiffForce);
-    ser_Diff_Force_left->append(timeDiffForce.toMSecsSinceEpoch(), QRandomGenerator::global()->bounded(0,20));
-    ser_Diff_Force_right->append(timeDiffForce.toMSecsSinceEpoch(), QRandomGenerator::global()->bounded(0,20));
+
+
+    if( is_PLC_CALC_new_data ){
+        ser_piston_loss_left->append(timePistonLoss.toMSecsSinceEpoch(), calc_left.GetPistonLosses());
+        ser_piston_loss_right->append(timePistonLoss.toMSecsSinceEpoch(), calc_right.GetPistonLosses());
+
+        ser_Stock_loss_left->append(timeStockLoss.toMSecsSinceEpoch(), calc_left.GetStockLosses());
+        ser_Stock_loss_right->append(timeStockLoss.toMSecsSinceEpoch(), calc_right.GetStockLosses());
+
+        ser_Diff_Force_left->append(timeDiffForce.toMSecsSinceEpoch(), calc_left.GetForce());
+        ser_Diff_Force_right->append(timeDiffForce.toMSecsSinceEpoch(), calc_right.GetForce());
+
+        is_PLC_CALC_new_data = false;
+    }else{
+        ser_piston_loss_left->append(timePistonLoss.toMSecsSinceEpoch(), QRandomGenerator::global()->bounded(0,20));
+        ser_piston_loss_right->append(timePistonLoss.toMSecsSinceEpoch(), QRandomGenerator::global()->bounded(0,20));
+        ser_Stock_loss_left->append(timeStockLoss.toMSecsSinceEpoch(), QRandomGenerator::global()->bounded(0,20));
+        ser_Stock_loss_right->append(timeStockLoss.toMSecsSinceEpoch(), QRandomGenerator::global()->bounded(0,20));
+        ser_Diff_Force_left->append(timeDiffForce.toMSecsSinceEpoch(), QRandomGenerator::global()->bounded(0,20));
+        ser_Diff_Force_right->append(timeDiffForce.toMSecsSinceEpoch(), QRandomGenerator::global()->bounded(0,20));
+
+    }
+
     chartDiffForce->scroll( x_DiffForce, 0 );
+    chartPistonLoss->scroll( x_PistonLoss, 0 );
+    chartStockLoss->scroll( x_StockLoss, 0 );
 }
 
 void GraphPlot::SetGraphPiston()
@@ -896,7 +941,13 @@ void GraphPlot::SensorDataUpdate(SensorPack pack)
     is_new_rod = true;
 }
 
-void GraphPlot::PLC_DataUpdate(PLC_Pack pack)
+void GraphPlot::PLC_DataUpdate(PLC_Data data)
 {
+    calc_left.InitValues(data.left);
+    calc_right.InitValues(data.right);
+    is_PLC_CALC_new_data = true;
 
+    plc_Data = data;
+    is_PLC_new_data_left = true  ;
+    is_PLC_new_data_right = true ;
 }

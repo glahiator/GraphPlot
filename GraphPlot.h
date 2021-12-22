@@ -10,6 +10,7 @@
 
 #include "SensorConnector.h"
 #include "PLC_Connector.h"
+#include "CalculateCylinder.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class GraphPlot; }
@@ -52,7 +53,7 @@ public:
     void SetGraphPistonLoss();
 
     void SensorDataUpdate( SensorPack pack );
-    void PLC_DataUpdate( PLC_Pack pack );
+    void PLC_DataUpdate( PLC_Data data );
 
 private Q_SLOTS:
     void updateUI();
@@ -63,6 +64,9 @@ private:
 
     SensorConnector * sensor;
     PLC_Connector * plc;
+
+    CalculateCylinder calc_right;
+    CalculateCylinder calc_left;
 
     int counter;
     bool switcher;
@@ -149,6 +153,13 @@ private:
     QValueAxis *ax_Y_DiffForce;
     QChart *chartDiffForce;
     QDateTime timeDiffForce;
+
+    bool is_PLC_CALC_new_data;
+    PLC_Data plc_Data;
+
+    bool is_PLC_new_data_left;
+    bool is_PLC_new_data_right;
+
 
 
     double prev_x;

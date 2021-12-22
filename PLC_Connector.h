@@ -8,13 +8,11 @@
 #include <QVariant>
 
 #include "Utilites.h"
+#include "CalculateCylinder.h"
 
-struct PLC_Pack {
-    QVector<quint16> adc1_data;
-    QVector<quint16> adc3_data;
-    QVector<quint16> adc1_filtered_data;
-    QVector<quint16> adc3_filtered_data;
-    quint32 millisec;
+struct PLC_Data {
+    CylinderVals right;
+    CylinderVals left;
 };
 
 class PLC_Connector : public QObject
@@ -35,8 +33,11 @@ private:
     QUdpSocket * socket;
     qint64 previousTime;
 
+    CylinderVals right_vals;
+    CylinderVals left_vals;
+
 signals:
-    void plcPackReceive(PLC_Pack pack);
+    void plcDataReceive(PLC_Data pack);
 };
 
 #endif // PLC_CONNECTOR_H
