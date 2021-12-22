@@ -29,6 +29,7 @@ public:
     void handleForcePlot();
 
     void handleRightTabPlot();
+    void handleCalcTabPlot();
 
     void SetGraphPiston();
     void SetGraphRod();
@@ -44,6 +45,12 @@ public:
     void SetGraphZolotPositionRight();
     void SetGraphShtokPositionRight();
     void TabGraphShowingRight();
+    void TabGraphShowingCalc();
+
+    // calc tab
+    void SetGraphDiffForce();
+    void SetGraphStockLoss();
+    void SetGraphPistonLoss();
 
     void SensorDataUpdate( SensorPack pack );
 
@@ -100,8 +107,6 @@ private:
     QDateTime timeLeftZolotPosit;
     QChart * chartLeftZolotPosit;
 
-
-
     QLineSeries *ser_right_piston_pressure;
     QLineSeries *ser_right_rod_pressure;
     QDateTimeAxis *ax_X_RightPressure;
@@ -126,6 +131,28 @@ private:
     QLineSeries *ser_right_ZolotPosit;
     QDateTime timeRightZolotPosit;
     QChart * chartRightZolotPosit;
+
+
+    QLineSeries *ser_piston_loss_right;
+    QLineSeries *ser_piston_loss_left;
+    QDateTimeAxis *ax_X_PistonLoss;
+    QValueAxis *ax_Y_PistonLoss;
+    QChart *chartPistonLoss;
+    QDateTime timePistonLoss;
+
+    QLineSeries *ser_Stock_loss_right;
+    QLineSeries *ser_Stock_loss_left;
+    QDateTimeAxis *ax_X_StockLoss;
+    QValueAxis *ax_Y_StockLoss;
+    QChart *chartStockLoss;
+    QDateTime timeStockLoss;
+
+    QLineSeries *ser_Diff_Force_right;
+    QLineSeries *ser_Diff_Force_left;
+    QDateTimeAxis *ax_X_DiffForce;
+    QValueAxis *ax_Y_DiffForce;
+    QChart *chartDiffForce;
+    QDateTime timeDiffForce;
 
 
     double prev_x;

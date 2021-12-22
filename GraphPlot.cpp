@@ -23,7 +23,9 @@ GraphPlot::GraphPlot(QWidget *parent)
     connect( sensor, &SensorConnector::sensorPackReceive, this, &GraphPlot::SensorDataUpdate );
 
     QDateTime all(QDateTime::currentDateTime().date(), QDateTime::currentDateTime().time().addSecs(-10));
-    timePiston = timeRod = timeLeftPressure = timeLeftZadan = timeLeftZolotPosit = timeLeftShtokPosit = timeRightPressure = timeRightZadan = timeRightZolotPosit = timeRightShtokPosit= all;
+    timePiston = timeRod = timeLeftPressure = timeLeftZadan = timeLeftZolotPosit = timeLeftShtokPosit = timeRightPressure
+            = timeRightZadan = timeRightZolotPosit = timeRightShtokPosit =
+            timePistonLoss = timeStockLoss = timeDiffForce = all;
 
     SetGraphPiston();
     SetGraphRod();
@@ -37,6 +39,10 @@ GraphPlot::GraphPlot(QWidget *parent)
     SetGraphZolotPositionRight();
     SetGraphShtokPositionRight();
 
+    SetGraphPistonLoss();
+    SetGraphStockLoss();
+    SetGraphDiffForce();
+
 
     connect( ui->tab_lef_cb_position_shtok, &QCheckBox::clicked, this, &GraphPlot::TabGraphShowingLeft );
     connect( ui->tab_lef_cb_position_zolot, &QCheckBox::clicked, this, &GraphPlot::TabGraphShowingLeft );
@@ -48,18 +54,22 @@ GraphPlot::GraphPlot(QWidget *parent)
     connect( ui->tab_right_cb_press_pist_rod, &QCheckBox::clicked, this, &GraphPlot::TabGraphShowingRight );
     connect( ui->tab_right_cb_zadan_klapan,   &QCheckBox::clicked, this, &GraphPlot::TabGraphShowingRight );
 
+    connect( ui->cb_calc_tab_diff_force,  &QCheckBox::clicked, this, &GraphPlot::TabGraphShowingCalc );
+    connect( ui->cb_calc_tab_piston_loss,  &QCheckBox::clicked, this, &GraphPlot::TabGraphShowingCalc );
+    connect( ui->cb_calc_tab_stock_loss,  &QCheckBox::clicked, this, &GraphPlot::TabGraphShowingCalc );
 
-    ui->themeComboBox->addItem("Light", QChart::ChartThemeLight);
-    ui->themeComboBox->addItem("Blue Cerulean", QChart::ChartThemeBlueCerulean);
-    ui->themeComboBox->addItem("Dark", QChart::ChartThemeDark);
-    ui->themeComboBox->addItem("Brown Sand", QChart::ChartThemeBrownSand);
-    ui->themeComboBox->addItem("Blue NCS", QChart::ChartThemeBlueNcs);
-    ui->themeComboBox->addItem("High Contrast", QChart::ChartThemeHighContrast);
-    ui->themeComboBox->addItem("Blue Icy", QChart::ChartThemeBlueIcy);
-    ui->themeComboBox->addItem("Qt", QChart::ChartThemeQt);
 
-//    ui->themeComboBox->setCurrentIndex(4);
-    connect( ui->themeComboBox, qOverload<int>(&QComboBox::currentIndexChanged), this, &GraphPlot::updateUI );
+//    ui->themeComboBox->addItem("Light", QChart::ChartThemeLight);
+//    ui->themeComboBox->addItem("Blue Cerulean", QChart::ChartThemeBlueCerulean);
+//    ui->themeComboBox->addItem("Dark", QChart::ChartThemeDark);
+//    ui->themeComboBox->addItem("Brown Sand", QChart::ChartThemeBrownSand);
+//    ui->themeComboBox->addItem("Blue NCS", QChart::ChartThemeBlueNcs);
+//    ui->themeComboBox->addItem("High Contrast", QChart::ChartThemeHighContrast);
+//    ui->themeComboBox->addItem("Blue Icy", QChart::ChartThemeBlueIcy);
+//    ui->themeComboBox->addItem("Qt", QChart::ChartThemeQt);
+
+////    ui->themeComboBox->setCurrentIndex(4);
+//    connect( ui->themeComboBox, qOverload<int>(&QComboBox::currentIndexChanged), this, &GraphPlot::updateUI );
 
     QPalette pal = qApp->palette();
     pal.setColor(QPalette::Window, QRgb(0xf0f0f0));
@@ -75,6 +85,7 @@ GraphPlot::GraphPlot(QWidget *parent)
     connect( timer, &QTimer::timeout, this, &GraphPlot::handleRodPlot );
     connect( timer, &QTimer::timeout, this, &GraphPlot::handleForcePlot );
     connect( timer, &QTimer::timeout, this, &GraphPlot::handleRightTabPlot );
+    connect( timer, &QTimer::timeout, this, &GraphPlot::handleCalcTabPlot );
     timer->start();
 }
 
@@ -86,8 +97,8 @@ GraphPlot::~GraphPlot()
 void GraphPlot::updateUI()
 {
     //![6]
-    QChart::ChartTheme theme = static_cast<QChart::ChartTheme>(
-                ui->themeComboBox->itemData(ui->themeComboBox->currentIndex()).toInt());
+    QChart::ChartTheme theme = static_cast<QChart::ChartTheme>(0);
+//                ui->themeComboBox->itemData(ui->themeComboBox->currentIndex()).toInt());
     //![6]
 
     //![7]
@@ -223,6 +234,30 @@ void GraphPlot::handleRightTabPlot()
     timeRightShtokPosit = timeRightShtokPosit.addMSecs(y_shtok);
     ser_right_ShtokPosit->append(timeRightShtokPosit.toMSecsSinceEpoch(), QRandomGenerator::global()->bounded(0,25));
     chartRightShtokPosit->scroll( x_shtok, 0 );
+}
+
+void GraphPlot::handleCalcTabPlot()
+{
+    qreal x_PistonLoss = ui->tab_calc_gv_piston_loss->chart()->plotArea().width() / ax_X_PistonLoss->tickCount();
+    qreal y_PistonLoss = ( ax_X_PistonLoss->max().toMSecsSinceEpoch() - ax_X_PistonLoss->min().toMSecsSinceEpoch() ) / ax_X_PistonLoss->tickCount();
+    timePistonLoss = timePistonLoss.addMSecs(y_PistonLoss);
+    ser_piston_loss_left->append(timePistonLoss.toMSecsSinceEpoch(), QRandomGenerator::global()->bounded(0,20));
+    ser_piston_loss_right->append(timePistonLoss.toMSecsSinceEpoch(), QRandomGenerator::global()->bounded(0,20));
+    chartPistonLoss->scroll( x_PistonLoss, 0 );
+
+    qreal x_StockLoss = ui->tab_calc_gv_stock_loss->chart()->plotArea().width() / ax_X_StockLoss->tickCount();
+    qreal y_StockLoss = ( ax_X_StockLoss->max().toMSecsSinceEpoch() - ax_X_StockLoss->min().toMSecsSinceEpoch() ) / ax_X_StockLoss->tickCount();
+    timeStockLoss = timeStockLoss.addMSecs(y_StockLoss);
+    ser_Stock_loss_left->append(timeStockLoss.toMSecsSinceEpoch(), QRandomGenerator::global()->bounded(0,20));
+    ser_Stock_loss_right->append(timeStockLoss.toMSecsSinceEpoch(), QRandomGenerator::global()->bounded(0,20));
+    chartStockLoss->scroll( x_StockLoss, 0 );
+
+    qreal x_DiffForce = ui->tab_calc_gv_diff_force->chart()->plotArea().width() / ax_X_DiffForce->tickCount();
+    qreal y_DiffForce = ( ax_X_DiffForce->max().toMSecsSinceEpoch() - ax_X_DiffForce->min().toMSecsSinceEpoch() ) / ax_X_DiffForce->tickCount();
+    timeDiffForce = timeDiffForce.addMSecs(y_DiffForce);
+    ser_Diff_Force_left->append(timeDiffForce.toMSecsSinceEpoch(), QRandomGenerator::global()->bounded(0,20));
+    ser_Diff_Force_right->append(timeDiffForce.toMSecsSinceEpoch(), QRandomGenerator::global()->bounded(0,20));
+    chartDiffForce->scroll( x_DiffForce, 0 );
 }
 
 void GraphPlot::SetGraphPiston()
@@ -685,6 +720,182 @@ void GraphPlot::TabGraphShowingRight()
     else{
         ui->tab_right_gv_zadan_klapan->hide();
     }
+}
+
+void GraphPlot::TabGraphShowingCalc()
+{
+    if( ui->cb_calc_tab_diff_force->isChecked() ){
+        ui->tab_calc_gv_diff_force->show();
+    }
+    else{
+        ui->tab_calc_gv_diff_force->hide();
+    }
+    if( ui->cb_calc_tab_piston_loss->isChecked() ){
+        ui->tab_calc_gv_piston_loss->show();
+    }
+    else{
+        ui->tab_calc_gv_piston_loss->hide();
+    }
+    if( ui->cb_calc_tab_stock_loss->isChecked() ){
+        ui->tab_calc_gv_stock_loss->show();
+    }
+    else{
+        ui->tab_calc_gv_stock_loss->hide();
+    }
+}
+
+void GraphPlot::SetGraphDiffForce()
+{
+    ser_Diff_Force_left = new QLineSeries();
+    ser_Diff_Force_left->setName("Левый");
+
+    ser_Diff_Force_right = new QLineSeries();
+    ser_Diff_Force_right->setName("Правый");
+
+    QDateTime temp_time = timeDiffForce;
+    ser_Diff_Force_left->append(timeDiffForce.toMSecsSinceEpoch(), 0);
+    ser_Diff_Force_right->append(timeDiffForce.toMSecsSinceEpoch(), 0);
+
+    for( int i = 1; i <= 10; i++ ){
+        timeDiffForce = timeDiffForce.addSecs(1);
+        ser_Diff_Force_left->append(timeDiffForce.toMSecsSinceEpoch(), 0);
+        ser_Diff_Force_right->append(timeDiffForce.toMSecsSinceEpoch(), 0);
+    }
+
+    ax_X_DiffForce = new QDateTimeAxis;
+    ax_Y_DiffForce = new QValueAxis;
+    ax_X_DiffForce->setTitleText("Время, сек");
+    ax_X_DiffForce->setFormat("hh:mm:ss");
+    ax_Y_DiffForce->setTitleText("Отношение");
+
+    chartDiffForce = new QChart();
+
+    chartDiffForce = new QChart();
+    chartDiffForce->legend()->setAlignment(Qt::AlignRight);
+    chartDiffForce->legend()->show();
+    chartDiffForce->addSeries(ser_Diff_Force_left);
+    chartDiffForce->addSeries(ser_Diff_Force_right);
+    chartDiffForce->addAxis(ax_X_DiffForce, Qt::AlignBottom);
+    chartDiffForce->addAxis(ax_Y_DiffForce, Qt::AlignLeft);
+    chartDiffForce->setAnimationOptions(QChart::SeriesAnimations);
+
+    ser_Diff_Force_left->attachAxis( ax_X_DiffForce );
+    ser_Diff_Force_left->attachAxis( ax_Y_DiffForce );
+
+    ser_Diff_Force_right->attachAxis( ax_X_DiffForce );
+    ser_Diff_Force_right->attachAxis( ax_Y_DiffForce );
+
+    ax_X_DiffForce->setRange(temp_time, timeDiffForce.addSecs(1));
+    ax_Y_DiffForce->setRange(0, 20);
+    ax_X_DiffForce->setTickCount(10);
+    ax_Y_DiffForce->setTickCount(5);
+    chartDiffForce->setTitle("Отношение эталонного дифф. усилия к реальному");
+
+    ui->tab_calc_gv_diff_force->setChart(chartDiffForce);
+    ui->tab_calc_gv_diff_force->setRenderHint(QPainter::Antialiasing);
+}
+
+void GraphPlot::SetGraphStockLoss()
+{
+    ser_Stock_loss_left = new QLineSeries();
+    ser_Stock_loss_left->setName("Левый");
+
+    ser_Stock_loss_right = new QLineSeries();
+    ser_Stock_loss_right->setName("Правый");
+
+    QDateTime temp_time = timeStockLoss;
+    ser_Stock_loss_left->append(timeStockLoss.toMSecsSinceEpoch(), 0);
+    ser_Stock_loss_right->append(timeStockLoss.toMSecsSinceEpoch(), 0);
+
+    for( int i = 1; i <= 10; i++ ){
+        timeStockLoss = timeStockLoss.addSecs(1);
+        ser_Stock_loss_left->append(timeStockLoss.toMSecsSinceEpoch(), 0);
+        ser_Stock_loss_right->append(timeStockLoss.toMSecsSinceEpoch(), 0);
+    }
+
+    ax_X_StockLoss = new QDateTimeAxis;
+    ax_Y_StockLoss = new QValueAxis;
+    ax_X_StockLoss->setTitleText("Время, сек");
+    ax_X_StockLoss->setFormat("hh:mm:ss");
+    ax_Y_StockLoss->setTitleText("Потери, %");
+
+    chartStockLoss = new QChart();
+
+    chartStockLoss = new QChart();
+    chartStockLoss->legend()->setAlignment(Qt::AlignRight);
+    chartStockLoss->legend()->show();
+    chartStockLoss->addSeries(ser_Stock_loss_left);
+    chartStockLoss->addSeries(ser_Stock_loss_right);
+    chartStockLoss->addAxis(ax_X_StockLoss, Qt::AlignBottom);
+    chartStockLoss->addAxis(ax_Y_StockLoss, Qt::AlignLeft);
+    chartStockLoss->setAnimationOptions(QChart::SeriesAnimations);
+
+    ser_Stock_loss_left->attachAxis( ax_X_StockLoss );
+    ser_Stock_loss_left->attachAxis( ax_Y_StockLoss );
+
+    ser_Stock_loss_right->attachAxis( ax_X_StockLoss );
+    ser_Stock_loss_right->attachAxis( ax_Y_StockLoss );
+
+    ax_X_StockLoss->setRange(temp_time, timeStockLoss.addSecs(1));
+    ax_Y_StockLoss->setRange(0, 20);
+    ax_X_StockLoss->setTickCount(10);
+    ax_Y_StockLoss->setTickCount(5);
+    chartStockLoss->setTitle("Процент потерь расхода в штоковой полости");
+
+    ui->tab_calc_gv_stock_loss->setChart(chartStockLoss);
+    ui->tab_calc_gv_stock_loss->setRenderHint(QPainter::Antialiasing);
+}
+
+void GraphPlot::SetGraphPistonLoss()
+{
+    ser_piston_loss_left = new QLineSeries();
+    ser_piston_loss_left->setName("Левый");
+
+    ser_piston_loss_right = new QLineSeries();
+    ser_piston_loss_right->setName("Правый");
+
+     QDateTime temp_time = timePistonLoss;
+     ser_piston_loss_left->append(timePistonLoss.toMSecsSinceEpoch(), 0);
+     ser_piston_loss_right->append(timePistonLoss.toMSecsSinceEpoch(), 0);
+
+     for( int i = 1; i <= 10; i++ ){
+         timePistonLoss = timePistonLoss.addSecs(1);
+         ser_piston_loss_left->append(timePistonLoss.toMSecsSinceEpoch(), 0);
+         ser_piston_loss_right->append(timePistonLoss.toMSecsSinceEpoch(), 0);
+     }
+
+     ax_X_PistonLoss = new QDateTimeAxis;
+     ax_Y_PistonLoss = new QValueAxis;
+     ax_X_PistonLoss->setTitleText("Время, сек");
+     ax_X_PistonLoss->setFormat("hh:mm:ss");
+     ax_Y_PistonLoss->setTitleText("Потери, %");
+
+     chartPistonLoss = new QChart();
+
+     chartPistonLoss = new QChart();
+     chartPistonLoss->legend()->setAlignment(Qt::AlignRight);
+     chartPistonLoss->legend()->show();
+     chartPistonLoss->addSeries(ser_piston_loss_left);
+     chartPistonLoss->addSeries(ser_piston_loss_right);
+     chartPistonLoss->addAxis(ax_X_PistonLoss, Qt::AlignBottom);
+     chartPistonLoss->addAxis(ax_Y_PistonLoss, Qt::AlignLeft);
+     chartPistonLoss->setAnimationOptions(QChart::SeriesAnimations);
+
+     ser_piston_loss_left->attachAxis( ax_X_PistonLoss );
+     ser_piston_loss_left->attachAxis( ax_Y_PistonLoss );
+
+     ser_piston_loss_right->attachAxis( ax_X_PistonLoss );
+     ser_piston_loss_right->attachAxis( ax_Y_PistonLoss );
+
+     ax_X_PistonLoss->setRange(temp_time, timePistonLoss.addSecs(1));
+     ax_Y_PistonLoss->setRange(0, 20);
+     ax_X_PistonLoss->setTickCount(10);
+     ax_Y_PistonLoss->setTickCount(5);
+     chartPistonLoss->setTitle("Процент потерь расхода в поршневой полости");
+
+     ui->tab_calc_gv_piston_loss->setChart(chartPistonLoss);
+     ui->tab_calc_gv_piston_loss->setRenderHint(QPainter::Antialiasing);
+
 }
 
 void GraphPlot::SensorDataUpdate(SensorPack pack)
