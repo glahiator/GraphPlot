@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1274</width>
-    <height>800</height>
+    <width>1800</width>
+    <height>1000</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -325,35 +325,240 @@
        </layout>
       </widget>
       <widget class="QWidget" name="tab_4">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
        <attribute name="title">
-        <string>Tab 2</string>
+        <string>Диагностика левого цилиндра</string>
        </attribute>
-       <widget class="QChartView" name="graphView3">
-        <property name="geometry">
-         <rect>
-          <x>0</x>
-          <y>310</y>
-          <width>1000</width>
-          <height>230</height>
-         </rect>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>1000</width>
-          <height>230</height>
-         </size>
-        </property>
-       </widget>
+       <layout class="QVBoxLayout" name="verticalLayout_3">
+        <item>
+         <layout class="QGridLayout" name="gridLayout_4">
+          <item row="0" column="0">
+           <widget class="QChartView" name="graphView3">
+            <property name="minimumSize">
+             <size>
+              <width>230</width>
+              <height>230</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QChartView" name="tab_left_gv_zadan_klapan">
+            <property name="minimumSize">
+             <size>
+              <width>230</width>
+              <height>230</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QChartView" name="tab_left_gv_zolot_position">
+            <property name="minimumSize">
+             <size>
+              <width>230</width>
+              <height>230</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QChartView" name="tab_left_gv_position_shtok">
+            <property name="minimumSize">
+             <size>
+              <width>230</width>
+              <height>230</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+           <widget class="QCheckBox" name="tab_lef_cb_press_pist_rod">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="text">
+             <string>Давление в поршневой и штоковой
+ полости</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="tab_lef_cb_zadan_klapan">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="text">
+             <string>Задание на проп. клапан</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="tab_lef_cb_position_zolot">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="text">
+             <string>Обратная связь положения золотника
+ проп. клапана</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="tab_lef_cb_position_shtok">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="text">
+             <string>Обратная связь положения штока</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab">
+       <attribute name="title">
+        <string>Диагностика правого цилиндра</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_7">
+        <item>
+         <layout class="QGridLayout" name="gridLayout_8">
+          <item row="0" column="0">
+           <widget class="QChartView" name="tab_right_gv_pressure">
+            <property name="minimumSize">
+             <size>
+              <width>230</width>
+              <height>230</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QChartView" name="tab_right_gv_zadan_klapan">
+            <property name="minimumSize">
+             <size>
+              <width>230</width>
+              <height>230</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QChartView" name="tab_right_gv_zolot_position">
+            <property name="minimumSize">
+             <size>
+              <width>230</width>
+              <height>230</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QChartView" name="tab_right_gv_position_shtok">
+            <property name="minimumSize">
+             <size>
+              <width>230</width>
+              <height>230</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_5">
+          <item>
+           <widget class="QCheckBox" name="tab_right_cb_press_pist_rod">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="text">
+             <string>Давление в поршневой и штоковой
+ полости</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="tab_right_cb_zadan_klapan">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="text">
+             <string>Задание на проп. клапан</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="tab_right_cb_position_zolot">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="text">
+             <string>Обратная связь положения золотника
+ проп. клапана</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="tab_right_cb_position_shtok">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="text">
+             <string>Обратная связь положения штока</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab_7">
+       <attribute name="title">
+        <string>Дополнительно</string>
+       </attribute>
        <widget class="QComboBox" name="themeComboBox">
         <property name="enabled">
-         <bool>true</bool>
+         <bool>false</bool>
         </property>
         <property name="geometry">
          <rect>
-          <x>560</x>
-          <y>130</y>
-          <width>138</width>
-          <height>24</height>
+          <x>700</x>
+          <y>140</y>
+          <width>86</width>
+          <height>25</height>
          </rect>
         </property>
        </widget>
@@ -367,8 +572,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1274</width>
-     <height>25</height>
+     <width>1800</width>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">

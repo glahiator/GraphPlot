@@ -5,6 +5,7 @@
 #include <QUdpSocket>
 #include <QString>
 #include <QTimer>
+#include <QVariant>
 
 #include "Utilites.h"
 

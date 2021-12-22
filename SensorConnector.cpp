@@ -4,7 +4,7 @@ SensorConnector::SensorConnector( quint16 _bind_port, QHostAddress _host, quint1
 : QObject(parent), bind_port(_bind_port), host(_host), send_port(_send_port)
 {
     socket = new QUdpSocket();
-    socket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
+    socket->setSocketOption(QAbstractSocket::LowDelayOption, QVariant(1));
     socket->bind( bind_port, QUdpSocket::ShareAddress );
     if ( socket->open(QIODevice::ReadWrite) )
     {
@@ -28,6 +28,7 @@ SensorConnector::SensorConnector( quint16 _bind_port, QHostAddress _host, quint1
     adc1_filtered_data.resize(10);
     adc3_filtered_data.resize(10);
     timer->start(1000);
+    previousTime = GetCurrentTime1();
 }
 
 SensorConnector::~SensorConnector()
@@ -111,6 +112,7 @@ void SensorConnector::SendReceivedPack()
     }
     else
     {
+        qDebug() << currentTime  <<  previousTime << GetCurrentTime1() << currentTime - previousTime;
         SensorPack pack;
         pack.adc1_data = adc1_data;
         pack.adc3_data = adc3_data;
