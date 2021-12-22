@@ -10,6 +10,7 @@ CONFIG += c++14
 
 SOURCES += \
     CalculateCylinder.cpp \
+    PLC_Connector.cpp \
     SensorConnector.cpp \
     Utilites.cpp \
     main.cpp \
@@ -18,6 +19,7 @@ SOURCES += \
 HEADERS += \
     CalculateCylinder.h \
     GraphPlot.h \
+    PLC_Connector.h \
     SensorConnector.h \
     Utilites.h
 

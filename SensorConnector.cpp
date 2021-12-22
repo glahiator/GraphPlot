@@ -34,6 +34,7 @@ SensorConnector::SensorConnector( quint16 _bind_port, QHostAddress _host, quint1
 SensorConnector::~SensorConnector()
 {
     delete socket;
+    delete timer;
 }
 
 void SensorConnector::Receive()

@@ -9,6 +9,7 @@
 #include <QtCharts/QLineSeries>
 
 #include "SensorConnector.h"
+#include "PLC_Connector.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class GraphPlot; }
@@ -51,6 +52,7 @@ public:
     void SetGraphPistonLoss();
 
     void SensorDataUpdate( SensorPack pack );
+    void PLC_DataUpdate( PLC_Pack pack );
 
 private Q_SLOTS:
     void updateUI();
@@ -60,6 +62,7 @@ private:
     QTimer * timer;
 
     SensorConnector * sensor;
+    PLC_Connector * plc;
 
     int counter;
     bool switcher;

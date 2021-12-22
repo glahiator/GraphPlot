@@ -22,6 +22,9 @@ GraphPlot::GraphPlot(QWidget *parent)
     sensor = new SensorConnector(2607, QHostAddress("192.168.1.20"), 8888, this);
     connect( sensor, &SensorConnector::sensorPackReceive, this, &GraphPlot::SensorDataUpdate );
 
+    plc = new PLC_Connector(2688, QHostAddress("192.168.1.30"), 8888, this);
+    connect( plc, &PLC_Connector::plcPackReceive, this, &GraphPlot::PLC_DataUpdate );
+
     QDateTime all(QDateTime::currentDateTime().date(), QDateTime::currentDateTime().time().addSecs(-10));
     timePiston = timeRod = timeLeftPressure = timeLeftZadan = timeLeftZolotPosit = timeLeftShtokPosit = timeRightPressure
             = timeRightZadan = timeRightZolotPosit = timeRightShtokPosit =
@@ -891,5 +894,9 @@ void GraphPlot::SensorDataUpdate(SensorPack pack)
     adc_val_2 = map( temp_val, 0, 4095, -10, 80 );
     is_new_piston = true;
     is_new_rod = true;
+}
+
+void GraphPlot::PLC_DataUpdate(PLC_Pack pack)
+{
 
 }
