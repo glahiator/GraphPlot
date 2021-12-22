@@ -142,16 +142,6 @@ void GraphPlot::updateUI()
     window()->setPalette(pal);
 }
 
-void GraphPlot::DebugSlot()
-{
-//    timer->stop();
-}
-void GraphPlot::StartTimer()
-{
-    timer->start();
-}
-
-
 void GraphPlot::handlePistonPlot()
 {
     qreal x = ui->graphView1->chart()->plotArea().width() / ax_X_Piston->tickCount();
@@ -207,7 +197,6 @@ void GraphPlot::handleForcePlot()
     ser_left_ShtokPosit->append(timeLeftShtokPosit.toMSecsSinceEpoch(), QRandomGenerator::global()->bounded(0,25));
     chartLeftShtokPosit->scroll( x_shtok, 0 );
 }
-
 void GraphPlot::handleRightTabPlot()
 {
     qreal x = ui->tab_right_gv_pressure->chart()->plotArea().width() / ax_X_RightPressure->tickCount();
@@ -235,7 +224,6 @@ void GraphPlot::handleRightTabPlot()
     ser_right_ShtokPosit->append(timeRightShtokPosit.toMSecsSinceEpoch(), QRandomGenerator::global()->bounded(0,25));
     chartRightShtokPosit->scroll( x_shtok, 0 );
 }
-
 void GraphPlot::handleCalcTabPlot()
 {
     qreal x_PistonLoss = ui->tab_calc_gv_piston_loss->chart()->plotArea().width() / ax_X_PistonLoss->tickCount();
@@ -506,7 +494,6 @@ void GraphPlot::SetGraphShtokPositionLeft()
     ui->tab_left_gv_position_shtok->setRubberBand( QChartView::RectangleRubberBand );
 
 }
-
 void GraphPlot::TabGraphShowingLeft()
 {
     if( ui->tab_lef_cb_position_shtok->isChecked() ){
@@ -657,7 +644,6 @@ void GraphPlot::SetGraphZolotPositionRight()
     ui->tab_right_gv_zolot_position->setRenderHint(QPainter::Antialiasing);
     ui->tab_right_gv_zolot_position->setRubberBand( QChartView::RectangleRubberBand );
 }
-
 void GraphPlot::SetGraphShtokPositionRight()
 {
     ser_right_ShtokPosit = new QLineSeries();
@@ -721,7 +707,6 @@ void GraphPlot::TabGraphShowingRight()
         ui->tab_right_gv_zadan_klapan->hide();
     }
 }
-
 void GraphPlot::TabGraphShowingCalc()
 {
     if( ui->cb_calc_tab_diff_force->isChecked() ){
@@ -794,7 +779,6 @@ void GraphPlot::SetGraphDiffForce()
     ui->tab_calc_gv_diff_force->setChart(chartDiffForce);
     ui->tab_calc_gv_diff_force->setRenderHint(QPainter::Antialiasing);
 }
-
 void GraphPlot::SetGraphStockLoss()
 {
     ser_Stock_loss_left = new QLineSeries();
@@ -845,7 +829,6 @@ void GraphPlot::SetGraphStockLoss()
     ui->tab_calc_gv_stock_loss->setChart(chartStockLoss);
     ui->tab_calc_gv_stock_loss->setRenderHint(QPainter::Antialiasing);
 }
-
 void GraphPlot::SetGraphPistonLoss()
 {
     ser_piston_loss_left = new QLineSeries();
@@ -908,16 +891,5 @@ void GraphPlot::SensorDataUpdate(SensorPack pack)
     adc_val_2 = map( temp_val, 0, 4095, -10, 80 );
     is_new_piston = true;
     is_new_rod = true;
-
-}
-
-void GraphPlot::on_action_13_triggered()
-{
-
-}
-
-
-void GraphPlot::on_action_14_triggered()
-{
 
 }

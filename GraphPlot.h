@@ -22,8 +22,6 @@ public:
     GraphPlot(QWidget *parent = nullptr);
     ~GraphPlot();
 
-    void DebugSlot();
-    void StartTimer();
     void handlePistonPlot();
     void handleRodPlot();
     void handleForcePlot();
@@ -56,11 +54,6 @@ public:
 
 private Q_SLOTS:
     void updateUI();
-
-    void on_action_13_triggered();
-
-    void on_action_14_triggered();
-
 
 private:
     Ui::GraphPlot *ui;
