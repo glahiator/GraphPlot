@@ -34,7 +34,7 @@
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_2">
           <item>
-           <widget class="QChartView" name="graphView1">
+           <widget class="QChartView" name="view_sens_fT">
             <property name="minimumSize">
              <size>
               <width>1000</width>
@@ -44,7 +44,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QChartView" name="graphView2">
+           <widget class="QChartView" name="view_sens_tfT">
             <property name="minimumSize">
              <size>
               <width>1000</width>

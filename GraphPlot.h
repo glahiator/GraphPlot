@@ -8,7 +8,7 @@
 #include <QtCharts/QChartView>
 #include <QtCharts/QLineSeries>
 
-#include "SensorConnector.h"
+#include "Sensor.h"
 #include "PLC_Connector.h"
 #include "CalculateCylinder.h"
 
@@ -24,15 +24,16 @@ public:
     GraphPlot(QWidget *parent = nullptr);
     ~GraphPlot();
 
-    void handlePistonPlot();
-    void handleRodPlot();
+    void handleSensorValPlot(); // 1 Tab (Блок левого цилиндра)
     void handleForcePlot();
 
     void handleRightTabPlot();
     void handleCalcTabPlot();
 
-    void SetGraphPiston();
-    void SetGraphRod();
+
+
+    void SetGraphSensor_fT();
+    void SetGraphSensor_tfT();
     // left tab graphs
     void SetGraphForce();
     void SetGraphZadanLeft();
@@ -53,7 +54,7 @@ public:
     void SetGraphPistonLoss();
 
     void SensorDataUpdate( SensorPack pack );
-    void PLC_DataUpdate( PLC_Data data );
+//    void PLC_DataUpdate( PLC_Data data );
 
 private Q_SLOTS:
     void updateUI();
@@ -62,7 +63,7 @@ private:
     Ui::GraphPlot *ui;
     QTimer * timer;
 
-    SensorConnector * sensor;
+    Sensor * sensor;
     PLC_Connector * plc;
 
     CalculateCylinder calc_right;
@@ -70,17 +71,17 @@ private:
 
     int counter;
     bool switcher;
-    QLineSeries *seriesPistonLeft;
-    QDateTimeAxis *ax_X_Piston;
-    QValueAxis *ax_Y_Piston;
-    QChart *chartPiston; // график процента потерь расхода в поршневой полости
-    QDateTime timePiston;
+    QLineSeries *ser_sens_fT;
+    QDateTimeAxis *ax_X_sens_fT;
+    QValueAxis *ax_Y_sens_fT;
+    QChart *chart_sens_fT; // график процента потерь расхода в поршневой полости
+    QDateTime time_sens_fT;
 
-    QLineSeries *seriesRodLeft;
-    QDateTimeAxis *ax_X_Rod;
-    QValueAxis *ax_Y_Rod;
-    QChart *chartRod; // график процента потерь расхода в штоковой полости
-    QDateTime timeRod;
+    QLineSeries *ser_sens_tfT;
+    QDateTimeAxis *ax_X_sens_tfT;
+    QValueAxis *ax_Y_sens_tfT;
+    QChart *chart_sens_tfT; // график процента потерь расхода в штоковой полости
+    QDateTime time_sens_tfT;
 
     QLineSeries *ser_left_piston_pressure;
     QLineSeries *ser_left_rod_pressure;
@@ -155,7 +156,7 @@ private:
     QDateTime timeDiffForce;
 
     bool is_PLC_CALC_new_data;
-    PLC_Data plc_Data;
+//    PLC_Data plc_Data;
 
     bool is_PLC_new_data_left;
     bool is_PLC_new_data_right;
@@ -166,14 +167,13 @@ private:
     double prev_y;
     bool is_Check;
 
-    bool is_new_piston;
-    qreal adc_val_1;
-    qreal adc_val_2;
-    qreal adc_filt_val_1;
-    qreal adc_filt_val_2;
+    bool is_new_sensor;
+
     bool is_new_rod;
     bool is_new_force;
 
+
+    SensorVals sens_left_actual;
 
 };
 #endif // GRAPHPLOT_H

@@ -8,11 +8,23 @@
 #include <QVariant>
 
 #include "Utilites.h"
-#include "CalculateCylinder.h"
 
-struct PLC_Data {
-    CylinderVals right;
-    CylinderVals left;
+struct PLCvals {
+    PLCvals() {
+        pA = 0.0;
+        pB = 0.0;
+        sY = 0.0;
+        fY = 0.0;
+        fS = 0.0;
+        VS = 0.0;
+    }
+    double pA; // Давление в поршневой полости  цилиндра
+    double pB; // Давление в штоковой полости  цилиндра
+    double sY; // Задание на проп. клапан  цилиндра
+    double fY; // Обратная связь положения золотника проп. клапана  цилиндра
+    double fS; // Обратная связь положения штока  цилиндра
+    double VS; // Обратная связь скорости штока  цилиндра (найти производную от fS)
+
 };
 
 class PLC_Connector : public QObject
@@ -33,11 +45,8 @@ private:
     QUdpSocket * socket;
     qint64 previousTime;
 
-    CylinderVals right_vals;
-    CylinderVals left_vals;
-
 signals:
-    void plcDataReceive(PLC_Data pack);
+//    void plcDataReceive(PLC_Data pack);
 };
 
 #endif // PLC_CONNECTOR_H

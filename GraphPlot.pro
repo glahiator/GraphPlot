@@ -11,7 +11,7 @@ CONFIG += c++14
 SOURCES += \
     CalculateCylinder.cpp \
     PLC_Connector.cpp \
-    SensorConnector.cpp \
+    Sensor.cpp \
     Utilites.cpp \
     main.cpp \
     GraphPlot.cpp
@@ -20,7 +20,7 @@ HEADERS += \
     CalculateCylinder.h \
     GraphPlot.h \
     PLC_Connector.h \
-    SensorConnector.h \
+    Sensor.h \
     Utilites.h
 
 FORMS += \
@@ -30,3 +30,6 @@ FORMS += \
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+DISTFILES += \
+    TODO

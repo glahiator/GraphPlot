@@ -34,9 +34,6 @@ PLC_Connector::~PLC_Connector()
 void PLC_Connector::Receive()
 {
     previousTime = GetCurrentTime1();
-
-    right_vals = CylinderVals();
-    left_vals = CylinderVals();
 }
 
 void PLC_Connector::SendReceivedPack()
@@ -48,10 +45,10 @@ void PLC_Connector::SendReceivedPack()
     }
     else
     {
-        PLC_Data data;
-        data.right = right_vals;
-        data.left = left_vals;
-        emit plcDataReceive( data );
+//        PLC_Data data;
+//        data.right = right_vals;
+//        data.left = left_vals;
+//        emit plcDataReceive( data );
     }
 }
 

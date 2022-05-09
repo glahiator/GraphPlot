@@ -1,6 +1,6 @@
-#include "SensorConnector.h"
+#include "Sensor.h"
 
-SensorConnector::SensorConnector( quint16 _bind_port, QHostAddress _host, quint16 _send_port, QObject *parent)
+Sensor::Sensor( quint16 _bind_port, QHostAddress _host, quint16 _send_port, QObject *parent)
 : QObject(parent), bind_port(_bind_port), host(_host), send_port(_send_port)
 {
     socket = new QUdpSocket();
@@ -9,7 +9,7 @@ SensorConnector::SensorConnector( quint16 _bind_port, QHostAddress _host, quint1
     if ( socket->open(QIODevice::ReadWrite) )
     {
         socket->readAll();
-        connect( socket, &QUdpSocket::readyRead, this, &SensorConnector::Receive );
+        connect( socket, &QUdpSocket::readyRead, this, &Sensor::Receive );
 
     }
     else
@@ -22,7 +22,7 @@ SensorConnector::SensorConnector( quint16 _bind_port, QHostAddress _host, quint1
     timer = new QTimer();
     timer->stop();
     timer->setInterval(1000);
-    connect( timer, &QTimer::timeout, this, &SensorConnector::SendReceivedPack );
+    connect( timer, &QTimer::timeout, this, &Sensor::SendReceivedPack );
     adc1_data.resize(10);
     adc3_data.resize(10);
     adc1_filtered_data.resize(10);
@@ -31,18 +31,17 @@ SensorConnector::SensorConnector( quint16 _bind_port, QHostAddress _host, quint1
     previousTime = GetCurrentTime1();
 }
 
-SensorConnector::~SensorConnector()
+Sensor::~Sensor()
 {
     delete socket;
     delete timer;
 }
 
-void SensorConnector::Receive()
+void Sensor::Receive()
 {
     previousTime = GetCurrentTime1();
 
     QByteArray datagram;
-//    qDebug() << "HERE";
 
     if (socket->hasPendingDatagrams())
     {
@@ -103,12 +102,11 @@ void SensorConnector::Receive()
     }
 }
 
-void SensorConnector::SendReceivedPack()
+void Sensor::SendReceivedPack()
 {
     qint64 currentTime = GetCurrentTime1();
     if ( currentTime - previousTime > 500 )
     {
-//        qDebug() << currentTime  <<  previousTime << GetCurrentTime1();
         return;
     }
     else

@@ -1,6 +1,9 @@
 #ifndef CALCULATECYLINDER_H
 #define CALCULATECYLINDER_H
 
+#include "PLC_Connector.h"
+#include "Sensor.h"
+
 const double Dp1 = 125.0; //Диаметр поршня первого левого цилиндра
 const double Dst1 = 90.0; // Диаметр штока левого цилиндра
 const double S1 = 25.0; // Ход левого цилиндра
@@ -16,23 +19,11 @@ const double Ar2 = 59.07; // Площадь штоковой полости пр
 
 struct CylinderVals {
     CylinderVals() {
-        pA = 0.0;
-        pB = 0.0;
-        sY = 0.0;
-        fY = 0.0;
-        fS = 0.0;
-        fT = 0.0;
-        VS = 0.0;
-        tfT = 0.0;
+        sens = SensorVals();
+        plc = PLCvals();
     }
-    double pA; // Давление в поршневой полости  цилиндра
-    double pB; // Давление в штоковой полости  цилиндра
-    double sY; // Задание на проп. клапан  цилиндра
-    double fY; // Обратная связь положения золотника проп. клапана  цилиндра
-    double fS; // Обратная связь положения штока  цилиндра
-    double fT; // Объемный расход из блока  цилиндра
-    double VS; // Обратная связь скорости штока  цилиндра
-    double tfT; // Температура расхода из блока  цилиндра
+    SensorVals sens;
+    PLCvals plc;
 };
 
 class CalculateCylinder
@@ -41,14 +32,13 @@ public:
     CalculateCylinder();
 
     void InitValues( CylinderVals _val );
-
     double GetStockLosses();
     double GetPistonLosses();
     double GetForce();
 
-    bool isInited;
+private:
     CylinderVals vals;
-
+    bool isInited;
 };
 
 #endif // CALCULATECYLINDER_H

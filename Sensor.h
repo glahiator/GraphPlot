@@ -1,5 +1,5 @@
-#ifndef SENSORCONNECTOR_H
-#define SENSORCONNECTOR_H
+#ifndef SENSOR_H
+#define SENSOR_H
 
 #include <QObject>
 #include <QUdpSocket>
@@ -17,12 +17,18 @@ struct SensorPack {
     quint32 millisec;
 };
 
-class SensorConnector : public QObject
+struct SensorVals {
+    SensorVals() { fT = 0.0; tfT = 0.0; }
+    double fT; // Объемный расход из блока  цилиндра
+    double tfT; // Температура расхода из блока  цилиндра
+};
+
+class Sensor : public QObject
 {
     Q_OBJECT
 public:
-    explicit SensorConnector(quint16 _bind_port, QHostAddress _host, quint16 _send_port = 8888, QObject *parent = nullptr);
-    ~SensorConnector();
+    explicit Sensor(quint16 _bind_port, QHostAddress _host, quint16 _send_port = 8888, QObject *parent = nullptr);
+    ~Sensor();
     void Receive();
     void SendReceivedPack();
 
@@ -43,10 +49,7 @@ private:
 
     quint32 packNumber;
     quint32 millisec;
-
     qint64 previousTime;
-
-
 };
 
-#endif // SENSORCONNECTOR_H
+#endif // SENSOR_H
