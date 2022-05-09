@@ -26,7 +26,7 @@ GraphPlot::GraphPlot(QWidget *parent)
     sensor = new SensorConnector(2607, QHostAddress("192.168.1.20"), 8888, this);
     connect( sensor, &SensorConnector::sensorPackReceive, this, &GraphPlot::SensorDataUpdate );
 
-    plc = new PLC_Connector(2688, QHostAddress("192.168.1.30"), 8888, this);
+    plc = new PLC_Connector(2688, QHostAddress("192.168.1.31"), 8888, this);
     connect( plc, &PLC_Connector::plcDataReceive, this, &GraphPlot::PLC_DataUpdate );
 
     QDateTime all(QDateTime::currentDateTime().date(), QDateTime::currentDateTime().time().addSecs(-10));
@@ -98,6 +98,9 @@ GraphPlot::GraphPlot(QWidget *parent)
 
 GraphPlot::~GraphPlot()
 {
+    delete sensor;
+    delete plc;
+    delete timer;
     delete ui;
 }
 
@@ -283,20 +286,7 @@ void GraphPlot::handleCalcTabPlot()
         is_PLC_CALC_new_data = false;
     }else{
 
-        qreal val = QRandomGenerator::global()->bounded(0,20);
-        if( val < 10 ){
-            QPen green(Qt::green);
-            green.setWidth(3);
-            ser_piston_loss_left->setPen(green);
-        }
-        else{
-            QPen green(Qt::red);
-            green.setWidth(1);
-            ser_piston_loss_left->setPen(green);
-        }
-
-
-        ser_piston_loss_left->append(timePistonLoss.toMSecsSinceEpoch(), val);
+        ser_piston_loss_left->append(timePistonLoss.toMSecsSinceEpoch(), QRandomGenerator::global()->bounded(0,20));
         ser_piston_loss_right->append(timePistonLoss.toMSecsSinceEpoch(), QRandomGenerator::global()->bounded(0,20));
         ser_Stock_loss_left->append(timeStockLoss.toMSecsSinceEpoch(), QRandomGenerator::global()->bounded(0,20));
         ser_Stock_loss_right->append(timeStockLoss.toMSecsSinceEpoch(), QRandomGenerator::global()->bounded(0,20));
@@ -945,10 +935,24 @@ void GraphPlot::SetGraphPistonLoss()
 
 void GraphPlot::SensorDataUpdate(SensorPack pack)
 {
-    double rashod_val = (ui->rb_adc1_rash->isChecked()) ?  pack.adc1_data.at(ui->cb_adc1_priston->currentIndex())
-                                                        :  pack.adc3_data.at(ui->cb_adc3_priston->currentIndex()) ;
-    double temp_val   = (ui->rb_temper_adc_1->isChecked()) ? pack.adc1_data.at(ui->cb_adc1_temper->currentIndex())
-                                                           : pack.adc3_data.at(ui->cb_adc3_temper->currentIndex());
+    double rashod_val = 0.0;
+    if( ui->chb_priston_filter->isChecked() ){
+        rashod_val = (ui->rb_adc1_rash->isChecked()) ?  pack.adc1_filtered_data.at(ui->cb_adc1_priston->currentIndex())
+                                                     :  pack.adc3_filtered_data.at(ui->cb_adc3_priston->currentIndex()) ;
+    } else {
+        rashod_val = (ui->rb_adc1_rash->isChecked()) ?  pack.adc1_data.at(ui->cb_adc1_priston->currentIndex())
+                                                     :  pack.adc3_data.at(ui->cb_adc3_priston->currentIndex()) ;
+    }
+
+    double temp_val = 0.0;
+    if( ui->chb_temper_filter->isChecked() ){
+        temp_val   = (ui->rb_temper_adc_1->isChecked()) ? pack.adc1_filtered_data.at(ui->cb_adc1_temper->currentIndex())
+                                                        : pack.adc3_filtered_data.at(ui->cb_adc3_temper->currentIndex());
+    } else {
+        temp_val   = (ui->rb_temper_adc_1->isChecked()) ? pack.adc1_data.at(ui->cb_adc1_temper->currentIndex())
+                                                        : pack.adc3_data.at(ui->cb_adc3_temper->currentIndex());
+    }
+
     adc_val_1 = map( rashod_val, 0, 4095, 0, 100 );
     adc_val_2 = map( temp_val, 0, 4095, -10, 80 );
     is_new_piston = true;

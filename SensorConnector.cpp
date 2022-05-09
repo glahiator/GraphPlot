@@ -113,7 +113,6 @@ void SensorConnector::SendReceivedPack()
     }
     else
     {
-        qDebug() << currentTime  <<  previousTime << GetCurrentTime1() << currentTime - previousTime;
         SensorPack pack;
         pack.adc1_data = adc1_data;
         pack.adc3_data = adc3_data;

@@ -44,13 +44,10 @@ void PLC_Connector::SendReceivedPack()
     qint64 currentTime = GetCurrentTime1();
     if ( currentTime - previousTime > 500 )
     {
-//        qDebug() << currentTime  <<  previousTime << GetCurrentTime1();
         return;
     }
     else
     {
-//        qDebug() << currentTime  <<  previousTime << GetCurrentTime1() << currentTime - previousTime;
-
         PLC_Data data;
         data.right = right_vals;
         data.left = left_vals;
