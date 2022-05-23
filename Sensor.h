@@ -18,9 +18,11 @@ struct SensorPack {
 };
 
 struct SensorVals {
-    SensorVals() { fT = 0.0; tfT = 0.0; }
-    double fT; // Объемный расход из блока  цилиндра
-    double tfT; // Температура расхода из блока  цилиндра
+    SensorVals() { fT_R = 0.0; tfT_R = 0.0; fT_L = 0.0; tfT_L = 0.0; }
+    double fT_L; // Объемный расход из блока левого цилиндра
+    double fT_R; // Объемный расход из блока правого цилиндра
+    double tfT_L; // Температура расхода из блока левого цилиндра
+    double tfT_R; // Температура расхода из блока правого цилиндра
 };
 
 class Sensor : public QObject

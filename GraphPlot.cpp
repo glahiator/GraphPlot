@@ -6,10 +6,12 @@ GraphPlot::GraphPlot(QWidget *parent)
     , ui(new Ui::GraphPlot)
 {
     ui->setupUi(this);
-    sens_left_actual = SensorVals();
+    sens_cylinders = SensorVals();
     counter = 0;
     switcher = false;
     is_Check = false;
+
+    isDemo_fT_tfT = false;
 
     is_new_sensor = false;
     is_new_rod = false;
@@ -26,12 +28,12 @@ GraphPlot::GraphPlot(QWidget *parent)
 //    connect( plc, &PLC_Connector::plcDataReceive, this, &GraphPlot::PLC_DataUpdate );
 
     QDateTime all(QDateTime::currentDateTime().date(), QDateTime::currentDateTime().time().addSecs(-10));
-    time_sens_fT = time_sens_tfT = timeLeftPressure = timeLeftZadan = timeLeftZolotPosit = timeLeftShtokPosit = timeRightPressure
+    time_fT = time_tfT = timeLeftPressure = timeLeftZadan = timeLeftZolotPosit = timeLeftShtokPosit = timeRightPressure
             = timeRightZadan = timeRightZolotPosit = timeRightShtokPosit =
             timePistonLoss = timeStockLoss = timeDiffForce = all;
 
-    SetGraphSensor_fT();
-    SetGraphSensor_tfT();
+    SetGraph_fT();
+    SetGraph_tfT();
     SetGraphForce();
     SetGraphZadanLeft();
     SetGraphZolotPositionLeft();
@@ -61,6 +63,8 @@ GraphPlot::GraphPlot(QWidget *parent)
     connect( ui->cb_calc_tab_piston_loss,  &QCheckBox::clicked, this, &GraphPlot::TabGraphShowingCalc );
     connect( ui->cb_calc_tab_stock_loss,  &QCheckBox::clicked, this, &GraphPlot::TabGraphShowingCalc );
 
+    connect( ui->act_demo, &QAction::toggled, this, &GraphPlot::SetDemo);
+
 
 //    ui->themeComboBox->addItem("Light", QChart::ChartThemeLight);
 //    ui->themeComboBox->addItem("Blue Cerulean", QChart::ChartThemeBlueCerulean);
@@ -85,7 +89,7 @@ GraphPlot::GraphPlot(QWidget *parent)
     timer->stop();
     timer->setInterval(1000);
 //    connect( timer, &QTimer::timeout, this, &GraphPlot::handlePistonPlot );
-    connect( timer, &QTimer::timeout, this, &GraphPlot::handleSensorValPlot );
+    connect( timer, &QTimer::timeout, this, &GraphPlot::handle_fT_tfT );
 
     connect( timer, &QTimer::timeout, this, &GraphPlot::handleForcePlot );
     connect( timer, &QTimer::timeout, this, &GraphPlot::handleRightTabPlot );
@@ -147,6 +151,11 @@ void GraphPlot::updateUI()
 //    pal.setColor(QPalette::Window, QRgb(0xcee7f0));
 //    pal.setColor(QPalette::WindowText, QRgb(0x404044));
     window()->setPalette(pal);
+}
+
+void GraphPlot::SetDemo()
+{
+    isDemo_fT_tfT = ui->act_demo->isChecked();
 }
 
 void GraphPlot::handleForcePlot()
@@ -273,110 +282,134 @@ void GraphPlot::handleCalcTabPlot()
     chartStockLoss->scroll( x_StockLoss, 0 );
 }
 
-void GraphPlot::handleSensorValPlot()
+void GraphPlot::handle_fT_tfT()
 {
-    qreal x_sens_fT = ui->view_sens_fT->chart()->plotArea().width() / ax_X_sens_fT->tickCount();
-    qreal y_sens_fT = (ax_X_sens_fT->max().toMSecsSinceEpoch() - ax_X_sens_fT->min().toMSecsSinceEpoch()) / ax_X_sens_fT->tickCount();
-    time_sens_fT = time_sens_fT.addMSecs(y_sens_fT);
+    qreal x_sens_fT = ui->view_sens_fT->chart()->plotArea().width() / ax_X_fT->tickCount();
+    qreal y_sens_fT = (ax_X_fT->max().toMSecsSinceEpoch() - ax_X_fT->min().toMSecsSinceEpoch()) / ax_X_fT->tickCount();
+    time_fT = time_fT.addMSecs(y_sens_fT);
 
-    qreal x_sens_tfT = ui->view_sens_tfT->chart()->plotArea().width() / ax_X_sens_tfT->tickCount();
-    qreal y_sens_tfT = (ax_X_sens_tfT->max().toMSecsSinceEpoch() - ax_X_sens_tfT->min().toMSecsSinceEpoch()) / ax_X_sens_tfT->tickCount();
-    time_sens_tfT = time_sens_tfT.addMSecs(y_sens_tfT);
+    qreal x_sens_tfT = ui->view_sens_tfT->chart()->plotArea().width() / ax_X_tfT->tickCount();
+    qreal y_sens_tfT = (ax_X_tfT->max().toMSecsSinceEpoch() - ax_X_tfT->min().toMSecsSinceEpoch()) / ax_X_tfT->tickCount();
+    time_tfT = time_tfT.addMSecs(y_sens_tfT);
 
     if( is_new_sensor ){
-        ser_sens_fT->append(time_sens_fT.toMSecsSinceEpoch(),  sens_left_actual.fT);
-        ser_sens_tfT->append(time_sens_tfT.toMSecsSinceEpoch(),  sens_left_actual.tfT);
+        if( ui->gb_fT_R->isChecked() ) ser_fT_R->append( time_fT.toMSecsSinceEpoch(),  sens_cylinders.fT_R);
+        if( ui->gb_fT_L->isChecked() ) ser_fT_L->append( time_fT.toMSecsSinceEpoch(),  sens_cylinders.fT_L);
+        if( ui->gb_tfT_R->isChecked()) ser_tfT_R->append(time_tfT.toMSecsSinceEpoch(), sens_cylinders.tfT_R);
+        if( ui->gb_tfT_L->isChecked()) ser_tfT_L->append(time_tfT.toMSecsSinceEpoch(), sens_cylinders.tfT_L);
         is_new_sensor = false;
     }
-    else {
-        ser_sens_fT->append(time_sens_fT.toMSecsSinceEpoch(),  QRandomGenerator::global()->bounded(0,20));
-        ser_sens_tfT->append(time_sens_tfT.toMSecsSinceEpoch(),  QRandomGenerator::global()->bounded(0,20));
+    else if (isDemo_fT_tfT)  {
+        if( ui->gb_fT_R->isChecked() ) ser_fT_R->append(time_fT.toMSecsSinceEpoch(),  QRandomGenerator::global()->bounded(0,10));
+        if( ui->gb_fT_L->isChecked() ) ser_fT_L->append(time_fT.toMSecsSinceEpoch(),  QRandomGenerator::global()->bounded(0,10));
+        if( ui->gb_tfT_R->isChecked()) ser_tfT_R->append(time_tfT.toMSecsSinceEpoch(),  QRandomGenerator::global()->bounded(0,6));
+        if( ui->gb_tfT_L->isChecked()) ser_tfT_L->append(time_tfT.toMSecsSinceEpoch(),  QRandomGenerator::global()->bounded(0,7));
     }
 
-    chart_sens_fT->scroll(x_sens_fT, 0);
-    chart_sens_tfT->scroll(x_sens_tfT, 0);
+    chart_fT->scroll(x_sens_fT, 0);
+    chart_tfT->scroll(x_sens_tfT, 0);
 }
 
-void GraphPlot::SetGraphSensor_fT()
+// Set Graphs for fT and tfT
+void GraphPlot::SetGraph_fT()
 {
-    ser_sens_fT = new QLineSeries();
-    ser_sens_fT->setName("Расход");
+    ser_fT_L = new QLineSeries();
+    ser_fT_L->setName("Левый");
 
-    QDateTime temp_time = time_sens_fT;
-    ser_sens_fT->append(time_sens_fT.toMSecsSinceEpoch(), 0);
+    ser_fT_R = new QLineSeries();
+    ser_fT_R->setName("Правый");
+
+    QDateTime temp_time = time_fT;
+    ser_fT_L->append(time_fT.toMSecsSinceEpoch(), 0);
+    ser_fT_R->append(time_fT.toMSecsSinceEpoch(), 0);
 
     for( int i = 1; i <= 10; i++ ){
-        time_sens_fT = time_sens_fT.addSecs(1);
-        ser_sens_fT->append(time_sens_fT.toMSecsSinceEpoch(), 0);
+        time_fT = time_fT.addSecs(1);
+        ser_fT_L->append(time_fT.toMSecsSinceEpoch(), 0);
+        ser_fT_R->append(time_fT.toMSecsSinceEpoch(), 0);
     }
 
-    ax_X_sens_fT = new QDateTimeAxis;
-    ax_Y_sens_fT = new QValueAxis;
-    ax_X_sens_fT->setTitleText("Время, сек");
-    ax_X_sens_fT->setFormat("hh:mm:ss");
-    ax_Y_sens_fT->setTitleText("Расход, л/мин");
+    ax_X_fT = new QDateTimeAxis;
+    ax_Y_fT = new QValueAxis;
+    ax_X_fT->setTitleText("Время, сек");
+    ax_X_fT->setFormat("hh:mm:ss");
+    ax_Y_fT->setTitleText("Расход, л/мин");
 
-    chart_sens_fT = new QChart();
-    chart_sens_fT->legend()->setAlignment(Qt::AlignRight);
-    chart_sens_fT->legend()->show();
-    chart_sens_fT->addSeries(ser_sens_fT);
-    chart_sens_fT->addAxis(ax_X_sens_fT, Qt::AlignBottom);
-    chart_sens_fT->addAxis(ax_Y_sens_fT, Qt::AlignLeft);
-    chart_sens_fT->setAnimationOptions(QChart::SeriesAnimations);
+    chart_fT = new QChart();
+//    chart_fT->legend()->setAlignment(Qt::AlignRight);
+    chart_fT->legend()->hide();
+    chart_fT->addSeries(ser_fT_L);
+    chart_fT->addSeries(ser_fT_R);
+    chart_fT->addAxis(ax_X_fT, Qt::AlignBottom);
+    chart_fT->addAxis(ax_Y_fT, Qt::AlignLeft);
+    chart_fT->setAnimationOptions(QChart::SeriesAnimations);
 
-    ser_sens_fT->attachAxis( ax_X_sens_fT );
-    ser_sens_fT->attachAxis( ax_Y_sens_fT );
+    ser_fT_L->attachAxis( ax_X_fT );
+    ser_fT_L->attachAxis( ax_Y_fT );
 
-    ax_X_sens_fT->setRange(temp_time, time_sens_fT.addSecs(1));
-    ax_Y_sens_fT->setRange(0, 100);
-    ax_X_sens_fT->setTickCount(10);
-    ax_Y_sens_fT->setTickCount(11);
-    chart_sens_fT->setTitle("Объемный расход из блока левого цилиндра");
+    ser_fT_R->attachAxis( ax_X_fT );
+    ser_fT_R->attachAxis( ax_Y_fT );
 
-    ui->view_sens_fT->setChart(chart_sens_fT);
+    ax_X_fT->setRange(temp_time, time_fT.addSecs(1));
+    ax_Y_fT->setRange(0, 100);
+    ax_X_fT->setTickCount(10);
+    ax_Y_fT->setTickCount(11);
+    chart_fT->setTitle("Объемный расход");
+
+    ui->view_sens_fT->setChart(chart_fT);
     ui->view_sens_fT->setRenderHint(QPainter::Antialiasing);
 //    ui->view_sens_fT->setRubberBand( QChartView::RectangleRubberBand );
 }
-void GraphPlot::SetGraphSensor_tfT()
+void GraphPlot::SetGraph_tfT()
 {
-    ser_sens_tfT = new QLineSeries();
-    ser_sens_tfT->setName("Расход");
+    ser_tfT_L = new QLineSeries();
+    ser_tfT_L->setName("Левый");
 
-    QDateTime temp_time = time_sens_tfT;
+    ser_tfT_R = new QLineSeries();
+    ser_tfT_R->setName("Правый");
 
-    ser_sens_tfT->append(time_sens_tfT.toMSecsSinceEpoch(), 0);
+    QDateTime temp_time = time_tfT;
+
+    ser_tfT_L->append(time_tfT.toMSecsSinceEpoch(), 0);
+    ser_tfT_R->append(time_tfT.toMSecsSinceEpoch(), 0);
 
     for( int i = 1; i <= 10; i++ ){
-        time_sens_tfT = time_sens_tfT.addSecs(1);
-        ser_sens_tfT->append(time_sens_tfT.toMSecsSinceEpoch(), 0);
+        time_tfT = time_tfT.addSecs(1);
+        ser_tfT_L->append(time_tfT.toMSecsSinceEpoch(), 0);
+        ser_tfT_R->append(time_tfT.toMSecsSinceEpoch(), 0);
     }
 
-    ax_X_sens_tfT = new QDateTimeAxis;
-    ax_Y_sens_tfT = new QValueAxis;
-    ax_X_sens_tfT->setTitleText("Время, сек");
-    ax_X_sens_tfT->setFormat("hh:mm:ss");
-    ax_Y_sens_tfT->setTitleText("Температура, град");
+    ax_X_tfT = new QDateTimeAxis;
+    ax_Y_tfT = new QValueAxis;
+    ax_X_tfT->setTitleText("Время, сек");
+    ax_X_tfT->setFormat("hh:mm:ss");
+    ax_Y_tfT->setTitleText("Температура, град");
 
-    chart_sens_tfT = new QChart();
-    chart_sens_tfT->legend()->setAlignment(Qt::AlignRight);
-    chart_sens_tfT->legend()->show();
-    chart_sens_tfT->addSeries(ser_sens_tfT);
-    chart_sens_tfT->addAxis(ax_X_sens_tfT, Qt::AlignBottom);
-    chart_sens_tfT->addAxis(ax_Y_sens_tfT, Qt::AlignLeft);
-    chart_sens_tfT->setAnimationOptions(QChart::SeriesAnimations);
+    chart_tfT = new QChart();
+//    chart_tfT->legend()->setAlignment(Qt::AlignRight);
+    chart_tfT->legend()->hide();
+    chart_tfT->addSeries(ser_tfT_L);
+    chart_tfT->addSeries(ser_tfT_R);
+    chart_tfT->addAxis(ax_X_tfT, Qt::AlignBottom);
+    chart_tfT->addAxis(ax_Y_tfT, Qt::AlignLeft);
+    chart_tfT->setAnimationOptions(QChart::SeriesAnimations);
 
-    ser_sens_tfT->attachAxis( ax_X_sens_tfT );
-    ser_sens_tfT->attachAxis( ax_Y_sens_tfT );
+    ser_tfT_L->attachAxis( ax_X_tfT );
+    ser_tfT_L->attachAxis( ax_Y_tfT );
+    ser_tfT_R->attachAxis( ax_X_tfT );
+    ser_tfT_R->attachAxis( ax_Y_tfT );
 
-    ax_X_sens_tfT->setRange(temp_time, time_sens_tfT.addSecs(1));
-    ax_Y_sens_tfT->setRange(-10, 80);
-    ax_X_sens_tfT->setTickCount(10);
-    ax_Y_sens_tfT->setTickCount(10);
-    chart_sens_tfT->setTitle("Температура расхода из блока левого цилиндра");
+    ax_X_tfT->setRange(temp_time, time_tfT.addSecs(1));
+    ax_Y_tfT->setRange(-10, 80);
+    ax_X_tfT->setTickCount(10);
+    ax_Y_tfT->setTickCount(10);
+    chart_tfT->setTitle("Температура расхода");
 
-    ui->view_sens_tfT->setChart(chart_sens_tfT);
+    ui->view_sens_tfT->setChart(chart_tfT);
     ui->view_sens_tfT->setRenderHint(QPainter::Antialiasing);
 }
+
+
 void GraphPlot::SetGraphForce()
 {
     ser_left_piston_pressure = new QLineSeries();
@@ -925,26 +958,46 @@ void GraphPlot::SetGraphPistonLoss()
 
 void GraphPlot::SensorDataUpdate(SensorPack pack)
 {
-    double rashod_val = 0.0;
-    if( ui->chb_priston_filter->isChecked() ){
-        rashod_val = (ui->rb_adc1_rash->isChecked()) ?  pack.adc1_filtered_data.at(ui->cb_adc1_priston->currentIndex())
-                                                     :  pack.adc3_filtered_data.at(ui->cb_adc3_priston->currentIndex()) ;
+    double _ft_R = 0.0;
+    if( ui->chb_filt_fT_R->isChecked() ){
+        _ft_R = (ui->rb_adc1_fT_R->isChecked()) ?  pack.adc1_filtered_data.at(ui->cb_adc1_fT_R->currentIndex())
+                                                :  pack.adc3_filtered_data.at(ui->cb_adc3_fT_R->currentIndex()) ;
     } else {
-        rashod_val = (ui->rb_adc1_rash->isChecked()) ?  pack.adc1_data.at(ui->cb_adc1_priston->currentIndex())
-                                                     :  pack.adc3_data.at(ui->cb_adc3_priston->currentIndex()) ;
+        _ft_R = (ui->rb_adc1_fT_R->isChecked()) ?  pack.adc1_data.at(ui->cb_adc1_fT_R->currentIndex())
+                                                :  pack.adc3_data.at(ui->cb_adc3_fT_R->currentIndex()) ;
+    }    
+
+    double _ft_L = 0.0;
+    if( ui->chb_filt_fT_L->isChecked() ){
+        _ft_L = (ui->rb_adc1_fT_L->isChecked()) ?  pack.adc1_filtered_data.at(ui->cb_adc1_fT_L->currentIndex())
+                                                :  pack.adc3_filtered_data.at(ui->cb_adc3_fT_L->currentIndex()) ;
+    } else {
+        _ft_L = (ui->rb_adc1_fT_L->isChecked()) ?  pack.adc1_data.at(ui->cb_adc1_fT_L->currentIndex())
+                                                :  pack.adc3_data.at(ui->cb_adc3_fT_L->currentIndex()) ;
     }
 
-    double temp_val = 0.0;
-    if( ui->chb_temper_filter->isChecked() ){
-        temp_val   = (ui->rb_temper_adc_1->isChecked()) ? pack.adc1_filtered_data.at(ui->cb_adc1_temper->currentIndex())
-                                                        : pack.adc3_filtered_data.at(ui->cb_adc3_temper->currentIndex());
+    double _tfT_R = 0.0;
+    if( ui->chb_filt_tfT_R->isChecked() ){
+        _tfT_R   = (ui->rb_adc1_tfT_R->isChecked()) ? pack.adc1_filtered_data.at(ui->cb_adc1_tfT_R->currentIndex())
+                                                    : pack.adc3_filtered_data.at(ui->cb_adc1_tfT_R->currentIndex());
     } else {
-        temp_val   = (ui->rb_temper_adc_1->isChecked()) ? pack.adc1_data.at(ui->cb_adc1_temper->currentIndex())
-                                                        : pack.adc3_data.at(ui->cb_adc3_temper->currentIndex());
+        _tfT_R   = (ui->rb_adc1_tfT_R->isChecked()) ? pack.adc1_data.at(ui->cb_adc1_tfT_R->currentIndex())
+                                                    : pack.adc3_data.at(ui->cb_adc1_tfT_R->currentIndex());
     }
 
-    sens_left_actual.fT = map( rashod_val, 0, 4095, 0, 100 );
-    sens_left_actual.tfT = map( temp_val, 0, 4095, -10, 80 );
+    double _tfT_L = 0.0;
+    if( ui->chb_filt_tfT_L->isChecked() ){
+        _tfT_L   = (ui->rb_adc1_tfT_L->isChecked()) ? pack.adc1_filtered_data.at(ui->cb_adc1_tfT_L->currentIndex())
+                                                    : pack.adc3_filtered_data.at(ui->cb_adc1_tfT_L->currentIndex());
+    } else {
+        _tfT_L   = (ui->rb_adc1_tfT_L->isChecked()) ? pack.adc1_data.at(ui->cb_adc1_tfT_L->currentIndex())
+                                                    : pack.adc3_data.at(ui->cb_adc1_tfT_L->currentIndex());
+    }
+
+    sens_cylinders.fT_R = map( _ft_R, 0, 4095, 0, 100 );
+    sens_cylinders.fT_L = map( _ft_L, 0, 4095, 0, 100 );
+    sens_cylinders.tfT_R = map( _tfT_R, 0, 4095, -10, 80 );
+    sens_cylinders.tfT_L = map( _tfT_L, 0, 4095, -10, 80 );
     is_new_sensor = true;
     is_new_rod = true;
 }
@@ -960,3 +1013,4 @@ void GraphPlot::SensorDataUpdate(SensorPack pack)
 //    is_PLC_new_data_left = true  ;
 //    is_PLC_new_data_right = true ;
 //}
+

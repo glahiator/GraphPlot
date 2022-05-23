@@ -16,7 +16,7 @@ double CalculateCylinder::GetStockLosses()
 {
     if( !isInited ) return 0.0;
     double Qthr = vals.plc.VS * Ar1 * 6;
-    double Qrealr = vals.sens.fT / 2.07;
+    double Qrealr = vals.sens.fT_L / 2.07;
     double phi_r = Qrealr / Qthr;
     return phi_r * 100;
 }
@@ -25,7 +25,7 @@ double CalculateCylinder::GetPistonLosses()
 {
     if( !isInited ) return 0.0;
     double Qthp = vals.plc.VS * Ap1 * 6;
-    double Qrealp = vals.sens.fT * 2.07;
+    double Qrealp = vals.sens.fT_L * 2.07;
     double phi_p = Qrealp / Qthp ;
     return phi_p * 100;
 }

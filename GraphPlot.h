@@ -24,7 +24,7 @@ public:
     GraphPlot(QWidget *parent = nullptr);
     ~GraphPlot();
 
-    void handleSensorValPlot(); // 1 Tab (Блок левого цилиндра)
+    void handle_fT_tfT(); // 1 Tab (Блок левого цилиндра)
     void handleForcePlot();
 
     void handleRightTabPlot();
@@ -32,8 +32,8 @@ public:
 
 
 
-    void SetGraphSensor_fT();
-    void SetGraphSensor_tfT();
+    void SetGraph_fT();
+    void SetGraph_tfT();
     // left tab graphs
     void SetGraphForce();
     void SetGraphZadanLeft();
@@ -71,17 +71,23 @@ private:
 
     int counter;
     bool switcher;
-    QLineSeries *ser_sens_fT;
-    QDateTimeAxis *ax_X_sens_fT;
-    QValueAxis *ax_Y_sens_fT;
-    QChart *chart_sens_fT; // график процента потерь расхода в поршневой полости
-    QDateTime time_sens_fT;
+    bool isDemo_fT_tfT;
 
-    QLineSeries *ser_sens_tfT;
-    QDateTimeAxis *ax_X_sens_tfT;
-    QValueAxis *ax_Y_sens_tfT;
-    QChart *chart_sens_tfT; // график процента потерь расхода в штоковой полости
-    QDateTime time_sens_tfT;
+    void SetDemo();
+    // FROM OUR SENSOR DATA fT (left and right)
+    QLineSeries *ser_fT_L;
+    QLineSeries *ser_fT_R;
+    QDateTimeAxis *ax_X_fT;
+    QValueAxis    *ax_Y_fT;
+    QChart *chart_fT;
+    QDateTime time_fT;
+    // FROM OUR SENSOR DATA tfT (left and right)
+    QLineSeries *ser_tfT_L;
+    QLineSeries *ser_tfT_R;
+    QDateTimeAxis *ax_X_tfT;
+    QValueAxis    *ax_Y_tfT;
+    QChart *chart_tfT;
+    QDateTime time_tfT;
 
     QLineSeries *ser_left_piston_pressure;
     QLineSeries *ser_left_rod_pressure;
@@ -173,7 +179,7 @@ private:
     bool is_new_force;
 
 
-    SensorVals sens_left_actual;
+    SensorVals sens_cylinders;
 
 };
 #endif // GRAPHPLOT_H
