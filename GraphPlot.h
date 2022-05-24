@@ -19,6 +19,9 @@
 #include "CalculateCylinder.h"
 #include "Graphs/UniqueGraph.h"
 
+const QString configFile = "../sensor.json";
+
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class GraphPlot; }
 QT_END_NAMESPACE

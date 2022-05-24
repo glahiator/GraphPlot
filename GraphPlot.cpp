@@ -907,11 +907,10 @@ void GraphPlot::SensorDataUpdate(SensorPack pack)
 
 void GraphPlot::LoadConfigure()
 {
-    QString filename = "../sensor.json";
     QFile file;
-    file.setFileName(filename);
+    file.setFileName(configFile);
     if(!file.open(QIODevice::ReadOnly | QIODevice::Text) ){
-        qDebug() << "ERROR WHEN OPENING CONFIG FILE" << filename << file.errorString();
+        qDebug() << "ERROR WHEN OPENING CONFIG FILE" << configFile << file.errorString();
     }
     QJsonParseError err;
     QJsonDocument src = QJsonDocument::fromJson( QString(file.readAll()).toUtf8(), &err);
@@ -952,25 +951,54 @@ void GraphPlot::LoadConfigure()
 
 void GraphPlot::SaveConfigure()
 {
-    QString filename = "../sensor.json";
+    QJsonObject fT_L_conf = QJsonObject();
+    fT_L_conf.insert( "isAdc1" ,   ui->rb_adc1_fT_L->isChecked() ) ;
+    fT_L_conf.insert( "isAdc3"  ,  ui->rb_adc3_fT_L->isChecked() );
+    fT_L_conf.insert( "isFilter" , ui->chb_filt_fT_L->isChecked() );
+    fT_L_conf.insert( "adc1index", ui->cb_adc1_fT_L->currentIndex() );
+    fT_L_conf.insert( "adc3index", ui->cb_adc3_fT_L->currentIndex() );
+    fT_L_conf.insert( "isChecked", ui->gb_fT_L->isChecked());
+
+    QJsonObject fT_R_conf = QJsonObject();
+    fT_R_conf.insert( "isAdc1" ,   ui->rb_adc1_fT_R->isChecked() ) ;
+    fT_R_conf.insert( "isAdc3"  ,  ui->rb_adc3_fT_R->isChecked() );
+    fT_R_conf.insert( "isFilter" , ui->chb_filt_fT_R->isChecked() );
+    fT_R_conf.insert( "adc1index", ui->cb_adc1_fT_R->currentIndex() );
+    fT_R_conf.insert( "adc3index", ui->cb_adc3_fT_R->currentIndex() );
+    fT_R_conf.insert( "isChecked", ui->gb_fT_R->isChecked());
+
+    QJsonObject tfT_L_conf = QJsonObject();
+    tfT_L_conf.insert( "isAdc1" ,   ui->rb_adc1_tfT_L->isChecked() ) ;
+    tfT_L_conf.insert( "isAdc3"  ,  ui->rb_adc3_tfT_L->isChecked() );
+    tfT_L_conf.insert( "isFilter" , ui->chb_filt_tfT_L->isChecked() );
+    tfT_L_conf.insert( "adc1index", ui->cb_adc1_tfT_L->currentIndex() );
+    tfT_L_conf.insert( "adc3index", ui->cb_adc3_tfT_L->currentIndex() );
+    tfT_L_conf.insert( "isChecked", ui->gb_tfT_L->isChecked());
+
+    QJsonObject tfT_R_conf = QJsonObject();
+    tfT_R_conf.insert( "isAdc1" ,   ui->rb_adc1_tfT_R->isChecked() ) ;
+    tfT_R_conf.insert( "isAdc3"  ,  ui->rb_adc3_tfT_R->isChecked() );
+    tfT_R_conf.insert( "isFilter" , ui->chb_filt_tfT_R->isChecked() );
+    tfT_R_conf.insert( "adc1index", ui->cb_adc1_tfT_R->currentIndex() );
+    tfT_R_conf.insert( "adc3index", ui->cb_adc3_tfT_R->currentIndex() );
+    tfT_R_conf.insert( "isChecked", ui->gb_tfT_R->isChecked());
+
+    QJsonObject mini_root = QJsonObject();
+    mini_root.insert( "gb_fT_L",  fT_L_conf);
+    mini_root.insert( "gb_fT_R",  fT_R_conf);
+    mini_root.insert( "gb_tfT_L",  tfT_L_conf);
+    mini_root.insert( "gb_tfT_R",  tfT_R_conf);
+
+    QJsonDocument doc = QJsonDocument();
+    doc.setObject(mini_root);
     QFile file;
-    file.setFileName(filename);
-    if(!file.open(QIODevice::ReadOnly | QIODevice::Text) ){
-        qDebug() << "ERROR WHEN OPENING CONFIG FILE" << filename << file.errorString();
+    file.setFileName(configFile);
+    if(!file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate) ){
+        qDebug() << "ERROR WHEN OPENING CONFIG FILE" << configFile << file.errorString();
     }
-    QJsonParseError err;
-    QJsonDocument src = QJsonDocument::fromJson( QString(file.readAll()).toUtf8(), &err);
+    file.write(doc.toJson());
     file.close();
-
-    QJsonObject jsonParse = src.object().value( "gb_fT_L" ).toObject();
-    jsonParse.value( "isChecked" ) = ui->gb_fT_L->isChecked();
-    jsonParse.value( "isAdc1" )    = ui->rb_adc1_fT_L->isChecked();
-    jsonParse.value( "isAdc3" )    = ui->rb_adc3_fT_L->isChecked();
-    jsonParse.value( "adc1index" ) = ui->cb_adc1_fT_L->currentIndex();
-    jsonParse.value( "adc3index" ) = ui->cb_adc3_fT_L->currentIndex();
-    jsonParse.value( "isFilter"  ) = ui->chb_filt_fT_L->isChecked();
-
-
+    qDebug() << "Save configure";
 }
 
 //void GraphPlot::PLC_DataUpdate(PLC_Data data)

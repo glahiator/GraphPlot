@@ -1,35 +1,34 @@
 {
-   "name" : "Sensor",
-   "gb_fT_L": {
-      "isChecked"  : true,
-      "isFilter"   : false,
-      "isAdc1"     : true,
-      "adc1index"  : 1,
-      "isAdc3"     : false,
-      "adc3index"  : 2
-   },
-   "gb_fT_R": {
-      "isChecked"  : true,
-      "isFilter"   : false,
-      "isAdc1"     : true,
-      "adc1index"  : 3,
-      "isAdc3"     : false,
-      "adc3index"  : 4
-   },
-   "gb_tfT_L": {
-      "isChecked"  : true,
-      "isFilter"   : false,
-      "isAdc1"     : true,
-      "adc1index"  : 5,
-      "isAdc3"     : false,
-      "adc3index"  : 6
-   },
-   "gb_tfT_R": {
-      "isChecked"  : true,
-      "isFilter"   : false,
-      "isAdc1"     : true,
-      "adc1index"  : 2,
-      "isAdc3"     : false,
-      "adc3index"  : 7
-   }
+    "gb_fT_L": {
+        "adc1index": 7,
+        "adc3index": 7,
+        "isAdc1": true,
+        "isAdc3": false,
+        "isChecked": true,
+        "isFilter": false
+    },
+    "gb_fT_R": {
+        "adc1index": 8,
+        "adc3index": 7,
+        "isAdc1": false,
+        "isAdc3": true,
+        "isChecked": true,
+        "isFilter": true
+    },
+    "gb_tfT_L": {
+        "adc1index": 3,
+        "adc3index": 3,
+        "isAdc1": true,
+        "isAdc3": false,
+        "isChecked": true,
+        "isFilter": true
+    },
+    "gb_tfT_R": {
+        "adc1index": 4,
+        "adc3index": 4,
+        "isAdc1": true,
+        "isAdc3": false,
+        "isChecked": true,
+        "isFilter": true
+    }
 }
