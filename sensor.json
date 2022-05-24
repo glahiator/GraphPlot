@@ -1,10 +1,10 @@
 {
     "gb_fT_L": {
         "adc1index": 7,
-        "adc3index": 7,
-        "isAdc1": false,
-        "isAdc3": true,
-        "isChecked": false,
+        "adc3index": 2,
+        "isAdc1": true,
+        "isAdc3": false,
+        "isChecked": true,
         "isFilter": false
     },
     "gb_fT_R": {
@@ -13,7 +13,7 @@
         "isAdc1": false,
         "isAdc3": true,
         "isChecked": true,
-        "isFilter": true
+        "isFilter": false
     },
     "gb_tfT_L": {
         "adc1index": 3,
@@ -21,7 +21,7 @@
         "isAdc1": true,
         "isAdc3": false,
         "isChecked": true,
-        "isFilter": true
+        "isFilter": false
     },
     "gb_tfT_R": {
         "adc1index": 4,
@@ -29,6 +29,6 @@
         "isAdc1": true,
         "isAdc3": false,
         "isChecked": true,
-        "isFilter": true
+        "isFilter": false
     }
 }

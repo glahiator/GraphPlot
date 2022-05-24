@@ -905,6 +905,8 @@ void GraphPlot::SensorDataUpdate(SensorPack pack)
     is_new_sensor = true;
 }
 
+
+// Утилиты для сохранения конфигов
 void GraphPlot::LoadConfigure()
 {
     QFile file;
@@ -948,7 +950,6 @@ void GraphPlot::LoadConfigure()
     ui->cb_adc3_tfT_R->setCurrentIndex( jsonParse.value( "adc3index" ).toInt() );
     ui->chb_filt_tfT_R->setChecked(jsonParse.value( "isFilter"  ).toBool() );
 }
-
 void GraphPlot::SaveConfigure()
 {
     QJsonObject fT_L_conf = QJsonObject();

@@ -15,7 +15,8 @@ SOURCES += \
     Sensor.cpp \
     Utilites.cpp \
     main.cpp \
-    GraphPlot.cpp
+    GraphPlot.cpp \
+    snap7.cpp
 
 HEADERS += \
     CalculateCylinder.h \
@@ -23,7 +24,8 @@ HEADERS += \
     Graphs/UniqueGraph.h \
     PLC_Connector.h \
     Sensor.h \
-    Utilites.h
+    Utilites.h \
+    snap7.h
 
 FORMS += \
     GraphPlot.ui
@@ -38,3 +40,8 @@ DISTFILES += \
 
 RESOURCES += \
     pic.qrc
+
+win32: LIBS += -L$$PWD/./ -lsnap7
+
+INCLUDEPATH += $$PWD/.
+DEPENDPATH += $$PWD/.

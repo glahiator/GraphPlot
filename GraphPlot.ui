@@ -60,21 +60,7 @@
           <item>
            <widget class="QGroupBox" name="gb_fT_L">
             <property name="styleSheet">
-             <string notr="true"> QGroupBox::indicator {
-
-
- }
-
-
- QGroupBox::indicator:unchecked {
-	 image: url(:/images/img/uncheck.png);
- }
-
-
- QGroupBox::indicator:checked {
-	 image: url(:/icons/img/check.png);
-
- }</string>
+             <string notr="true"/>
             </property>
             <property name="title">
              <string>Левый цилиндр</string>
@@ -1801,7 +1787,7 @@
      <x>0</x>
      <y>0</y>
      <width>1800</width>
-     <height>22</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">
