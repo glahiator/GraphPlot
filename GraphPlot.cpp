@@ -14,12 +14,24 @@ GraphPlot::GraphPlot(QWidget *parent)
     isDemo_fT_tfT = false;
 
     is_new_sensor = false;
-    is_new_rod = false;
     is_new_force = false;
 
     is_PLC_CALC_new_data = false;
     is_PLC_new_data_left = false;
     is_PLC_new_data_right = false;
+
+
+    fT_graph = new UniqueGraph( "Объемный расход", this);
+    tfT_graph = new UniqueGraph( "Температура расхода", this);
+    fT_graph->Configure("Расход, л/мин");
+    ui->view_fT->setChart(fT_graph->chart);
+    ui->view_fT->setRenderHint(QPainter::Antialiasing);
+
+
+    tfT_graph->Configure("Температура, град");
+    ui->view_tfT->setChart( tfT_graph->chart );
+    ui->view_tfT->setRenderHint(QPainter::Antialiasing);
+
 
     sensor = new Sensor(2607, QHostAddress("192.168.1.20"), 8888, this);
     connect( sensor, &Sensor::sensorPackReceive, this, &GraphPlot::SensorDataUpdate );
@@ -28,12 +40,12 @@ GraphPlot::GraphPlot(QWidget *parent)
 //    connect( plc, &PLC_Connector::plcDataReceive, this, &GraphPlot::PLC_DataUpdate );
 
     QDateTime all(QDateTime::currentDateTime().date(), QDateTime::currentDateTime().time().addSecs(-10));
-    time_fT = time_tfT = timeLeftPressure = timeLeftZadan = timeLeftZolotPosit = timeLeftShtokPosit = timeRightPressure
+    timeLeftPressure = timeLeftZadan = timeLeftZolotPosit = timeLeftShtokPosit = timeRightPressure
             = timeRightZadan = timeRightZolotPosit = timeRightShtokPosit =
             timePistonLoss = timeStockLoss = timeDiffForce = all;
 
-    SetGraph_fT();
-    SetGraph_tfT();
+//    SetGraph_fT();
+//    SetGraph_tfT();
     SetGraphForce();
     SetGraphZadanLeft();
     SetGraphZolotPositionLeft();
@@ -89,6 +101,7 @@ GraphPlot::GraphPlot(QWidget *parent)
     timer->stop();
     timer->setInterval(1000);
 //    connect( timer, &QTimer::timeout, this, &GraphPlot::handlePistonPlot );
+//    connect( timer, &QTimer::timeout, this, &GraphPlot::handle_fT_tfT );
     connect( timer, &QTimer::timeout, this, &GraphPlot::handle_fT_tfT );
 
     connect( timer, &QTimer::timeout, this, &GraphPlot::handleForcePlot );
@@ -113,8 +126,8 @@ void GraphPlot::updateUI()
     //![6]
 
     //![7]
-    ui->view_sens_fT->chart()->setTheme(theme);
-    ui->view_sens_tfT->chart()->setTheme(theme);
+    ui->view_fT->chart()->setTheme(theme);
+    ui->view_tfT->chart()->setTheme(theme);
     ui->graphView3->chart()->setTheme(theme);
     //![7]
 
@@ -284,131 +297,23 @@ void GraphPlot::handleCalcTabPlot()
 
 void GraphPlot::handle_fT_tfT()
 {
-    qreal x_sens_fT = ui->view_sens_fT->chart()->plotArea().width() / ax_X_fT->tickCount();
-    qreal y_sens_fT = (ax_X_fT->max().toMSecsSinceEpoch() - ax_X_fT->min().toMSecsSinceEpoch()) / ax_X_fT->tickCount();
-    time_fT = time_fT.addMSecs(y_sens_fT);
-
-    qreal x_sens_tfT = ui->view_sens_tfT->chart()->plotArea().width() / ax_X_tfT->tickCount();
-    qreal y_sens_tfT = (ax_X_tfT->max().toMSecsSinceEpoch() - ax_X_tfT->min().toMSecsSinceEpoch()) / ax_X_tfT->tickCount();
-    time_tfT = time_tfT.addMSecs(y_sens_tfT);
-
     if( is_new_sensor ){
-        if( ui->gb_fT_R->isChecked() ) ser_fT_R->append( time_fT.toMSecsSinceEpoch(),  sens_cylinders.fT_R);
-        if( ui->gb_fT_L->isChecked() ) ser_fT_L->append( time_fT.toMSecsSinceEpoch(),  sens_cylinders.fT_L);
-        if( ui->gb_tfT_R->isChecked()) ser_tfT_R->append(time_tfT.toMSecsSinceEpoch(), sens_cylinders.tfT_R);
-        if( ui->gb_tfT_L->isChecked()) ser_tfT_L->append(time_tfT.toMSecsSinceEpoch(), sens_cylinders.tfT_L);
-        is_new_sensor = false;
-    }
-    else if (isDemo_fT_tfT)  {
-        if( ui->gb_fT_R->isChecked() ) ser_fT_R->append(time_fT.toMSecsSinceEpoch(),  QRandomGenerator::global()->bounded(0,10));
-        if( ui->gb_fT_L->isChecked() ) ser_fT_L->append(time_fT.toMSecsSinceEpoch(),  QRandomGenerator::global()->bounded(0,10));
-        if( ui->gb_tfT_R->isChecked()) ser_tfT_R->append(time_tfT.toMSecsSinceEpoch(),  QRandomGenerator::global()->bounded(0,6));
-        if( ui->gb_tfT_L->isChecked()) ser_tfT_L->append(time_tfT.toMSecsSinceEpoch(),  QRandomGenerator::global()->bounded(0,7));
+        fT_graph->ChartIncrement( ui->gb_fT_L->isChecked(), sens_cylinders.fT_L,
+                                  ui->gb_fT_R->isChecked(), sens_cylinders.fT_R);
+        tfT_graph->ChartIncrement( ui->gb_tfT_L->isChecked(), sens_cylinders.tfT_L,
+                                   ui->gb_tfT_R->isChecked(), sens_cylinders.tfT_R );
+
+    } else if(isDemo_fT_tfT) {
+        fT_graph->ChartIncrement( ui->gb_fT_L->isChecked(), QRandomGenerator::global()->bounded(0,10),
+                                  ui->gb_fT_R->isChecked(), QRandomGenerator::global()->bounded(0,10));
+
+        tfT_graph->ChartIncrement( ui->gb_tfT_L->isChecked(), QRandomGenerator::global()->bounded(0,5),
+                                   ui->gb_tfT_R->isChecked(), QRandomGenerator::global()->bounded(0,5) );
     }
 
-    chart_fT->scroll(x_sens_fT, 0);
-    chart_tfT->scroll(x_sens_tfT, 0);
+    fT_graph->ChartScroll(  ui->view_fT->chart()->plotArea().width()  );
+    tfT_graph->ChartScroll( ui->view_tfT->chart()->plotArea().width() );
 }
-
-// Set Graphs for fT and tfT
-void GraphPlot::SetGraph_fT()
-{
-    ser_fT_L = new QLineSeries();
-    ser_fT_L->setName("Левый");
-
-    ser_fT_R = new QLineSeries();
-    ser_fT_R->setName("Правый");
-
-    QDateTime temp_time = time_fT;
-    ser_fT_L->append(time_fT.toMSecsSinceEpoch(), 0);
-    ser_fT_R->append(time_fT.toMSecsSinceEpoch(), 0);
-
-    for( int i = 1; i <= 10; i++ ){
-        time_fT = time_fT.addSecs(1);
-        ser_fT_L->append(time_fT.toMSecsSinceEpoch(), 0);
-        ser_fT_R->append(time_fT.toMSecsSinceEpoch(), 0);
-    }
-
-    ax_X_fT = new QDateTimeAxis;
-    ax_Y_fT = new QValueAxis;
-    ax_X_fT->setTitleText("Время, сек");
-    ax_X_fT->setFormat("hh:mm:ss");
-    ax_Y_fT->setTitleText("Расход, л/мин");
-
-    chart_fT = new QChart();
-//    chart_fT->legend()->setAlignment(Qt::AlignRight);
-    chart_fT->legend()->hide();
-    chart_fT->addSeries(ser_fT_L);
-    chart_fT->addSeries(ser_fT_R);
-    chart_fT->addAxis(ax_X_fT, Qt::AlignBottom);
-    chart_fT->addAxis(ax_Y_fT, Qt::AlignLeft);
-    chart_fT->setAnimationOptions(QChart::SeriesAnimations);
-
-    ser_fT_L->attachAxis( ax_X_fT );
-    ser_fT_L->attachAxis( ax_Y_fT );
-
-    ser_fT_R->attachAxis( ax_X_fT );
-    ser_fT_R->attachAxis( ax_Y_fT );
-
-    ax_X_fT->setRange(temp_time, time_fT.addSecs(1));
-    ax_Y_fT->setRange(0, 100);
-    ax_X_fT->setTickCount(10);
-    ax_Y_fT->setTickCount(11);
-    chart_fT->setTitle("Объемный расход");
-
-    ui->view_sens_fT->setChart(chart_fT);
-    ui->view_sens_fT->setRenderHint(QPainter::Antialiasing);
-//    ui->view_sens_fT->setRubberBand( QChartView::RectangleRubberBand );
-}
-void GraphPlot::SetGraph_tfT()
-{
-    ser_tfT_L = new QLineSeries();
-    ser_tfT_L->setName("Левый");
-
-    ser_tfT_R = new QLineSeries();
-    ser_tfT_R->setName("Правый");
-
-    QDateTime temp_time = time_tfT;
-
-    ser_tfT_L->append(time_tfT.toMSecsSinceEpoch(), 0);
-    ser_tfT_R->append(time_tfT.toMSecsSinceEpoch(), 0);
-
-    for( int i = 1; i <= 10; i++ ){
-        time_tfT = time_tfT.addSecs(1);
-        ser_tfT_L->append(time_tfT.toMSecsSinceEpoch(), 0);
-        ser_tfT_R->append(time_tfT.toMSecsSinceEpoch(), 0);
-    }
-
-    ax_X_tfT = new QDateTimeAxis;
-    ax_Y_tfT = new QValueAxis;
-    ax_X_tfT->setTitleText("Время, сек");
-    ax_X_tfT->setFormat("hh:mm:ss");
-    ax_Y_tfT->setTitleText("Температура, град");
-
-    chart_tfT = new QChart();
-//    chart_tfT->legend()->setAlignment(Qt::AlignRight);
-    chart_tfT->legend()->hide();
-    chart_tfT->addSeries(ser_tfT_L);
-    chart_tfT->addSeries(ser_tfT_R);
-    chart_tfT->addAxis(ax_X_tfT, Qt::AlignBottom);
-    chart_tfT->addAxis(ax_Y_tfT, Qt::AlignLeft);
-    chart_tfT->setAnimationOptions(QChart::SeriesAnimations);
-
-    ser_tfT_L->attachAxis( ax_X_tfT );
-    ser_tfT_L->attachAxis( ax_Y_tfT );
-    ser_tfT_R->attachAxis( ax_X_tfT );
-    ser_tfT_R->attachAxis( ax_Y_tfT );
-
-    ax_X_tfT->setRange(temp_time, time_tfT.addSecs(1));
-    ax_Y_tfT->setRange(-10, 80);
-    ax_X_tfT->setTickCount(10);
-    ax_Y_tfT->setTickCount(10);
-    chart_tfT->setTitle("Температура расхода");
-
-    ui->view_sens_tfT->setChart(chart_tfT);
-    ui->view_sens_tfT->setRenderHint(QPainter::Antialiasing);
-}
-
 
 void GraphPlot::SetGraphForce()
 {
@@ -999,7 +904,6 @@ void GraphPlot::SensorDataUpdate(SensorPack pack)
     sens_cylinders.tfT_R = map( _tfT_R, 0, 4095, -10, 80 );
     sens_cylinders.tfT_L = map( _tfT_L, 0, 4095, -10, 80 );
     is_new_sensor = true;
-    is_new_rod = true;
 }
 
 //void GraphPlot::PLC_DataUpdate(PLC_Data data)

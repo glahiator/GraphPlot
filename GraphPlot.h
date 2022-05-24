@@ -8,9 +8,16 @@
 #include <QtCharts/QChartView>
 #include <QtCharts/QLineSeries>
 
+#include <QFile>
+#include <QJsonDocument>
+#include <QJsonValue>
+#include <QJsonObject>
+#include <QMap>
+
 #include "Sensor.h"
 #include "PLC_Connector.h"
 #include "CalculateCylinder.h"
+#include "Graphs/UniqueGraph.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class GraphPlot; }
@@ -24,13 +31,13 @@ public:
     GraphPlot(QWidget *parent = nullptr);
     ~GraphPlot();
 
-    void handle_fT_tfT(); // 1 Tab (Блок левого цилиндра)
-    void handleForcePlot();
+    UniqueGraph * fT_graph;
+    UniqueGraph * tfT_graph;
+    void handle_fT_tfT();
 
+    void handleForcePlot();
     void handleRightTabPlot();
     void handleCalcTabPlot();
-
-
 
     void SetGraph_fT();
     void SetGraph_tfT();
@@ -74,20 +81,6 @@ private:
     bool isDemo_fT_tfT;
 
     void SetDemo();
-    // FROM OUR SENSOR DATA fT (left and right)
-    QLineSeries *ser_fT_L;
-    QLineSeries *ser_fT_R;
-    QDateTimeAxis *ax_X_fT;
-    QValueAxis    *ax_Y_fT;
-    QChart *chart_fT;
-    QDateTime time_fT;
-    // FROM OUR SENSOR DATA tfT (left and right)
-    QLineSeries *ser_tfT_L;
-    QLineSeries *ser_tfT_R;
-    QDateTimeAxis *ax_X_tfT;
-    QValueAxis    *ax_Y_tfT;
-    QChart *chart_tfT;
-    QDateTime time_tfT;
 
     QLineSeries *ser_left_piston_pressure;
     QLineSeries *ser_left_rod_pressure;
@@ -167,19 +160,13 @@ private:
     bool is_PLC_new_data_left;
     bool is_PLC_new_data_right;
 
-
-
     double prev_x;
     double prev_y;
     bool is_Check;
 
     bool is_new_sensor;
 
-    bool is_new_rod;
     bool is_new_force;
-
-
     SensorVals sens_cylinders;
-
 };
 #endif // GRAPHPLOT_H
