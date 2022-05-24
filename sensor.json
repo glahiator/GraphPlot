@@ -1,0 +1,35 @@
+{
+   "name" : "Sensor",
+   "gb_fT_L": {
+      "isChecked"  : true,
+      "isFilter"   : false,
+      "isAdc1"     : true,
+      "adc1index"  : 1,
+      "isAdc3"     : false,
+      "adc3index"  : 2
+   },
+   "gb_fT_R": {
+      "isChecked"  : true,
+      "isFilter"   : false,
+      "isAdc1"     : true,
+      "adc1index"  : 3,
+      "isAdc3"     : false,
+      "adc3index"  : 4
+   },
+   "gb_tfT_L": {
+      "isChecked"  : true,
+      "isFilter"   : false,
+      "isAdc1"     : true,
+      "adc1index"  : 5,
+      "isAdc3"     : false,
+      "adc3index"  : 6
+   },
+   "gb_tfT_R": {
+      "isChecked"  : true,
+      "isFilter"   : false,
+      "isAdc1"     : true,
+      "adc1index"  : 2,
+      "isAdc3"     : false,
+      "adc3index"  : 7
+   }
+}

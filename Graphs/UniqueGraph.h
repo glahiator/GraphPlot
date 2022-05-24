@@ -1,5 +1,9 @@
 #ifndef UNIQUEGRAPH_H
 #define UNIQUEGRAPH_H
+/*
+ * Для построения графиков, в котором строятся на одном
+ * чарте 2 линейные серии. *
+ * */
 
 #include <QObject>
 #include <QtCharts>

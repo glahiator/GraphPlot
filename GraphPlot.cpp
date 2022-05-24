@@ -6,7 +6,10 @@ GraphPlot::GraphPlot(QWidget *parent)
     , ui(new Ui::GraphPlot)
 {
     ui->setupUi(this);
-    sens_cylinders = SensorVals();
+    sens_data = SensorVals();
+
+    LoadConfigure();
+
     counter = 0;
     switcher = false;
     is_Check = false;
@@ -20,16 +23,13 @@ GraphPlot::GraphPlot(QWidget *parent)
     is_PLC_new_data_left = false;
     is_PLC_new_data_right = false;
 
-
-    fT_graph = new UniqueGraph( "Объемный расход", this);
+    fT_graph  = new UniqueGraph( "Объемный расход", this);
     tfT_graph = new UniqueGraph( "Температура расхода", this);
-    fT_graph->Configure("Расход, л/мин");
-    ui->view_fT->setChart(fT_graph->chart);
-    ui->view_fT->setRenderHint(QPainter::Antialiasing);
-
-
+    fT_graph->Configure( "Расход, л/мин");
     tfT_graph->Configure("Температура, град");
+    ui->view_fT->setChart(   fT_graph->chart);
     ui->view_tfT->setChart( tfT_graph->chart );
+    ui->view_fT->setRenderHint( QPainter::Antialiasing);
     ui->view_tfT->setRenderHint(QPainter::Antialiasing);
 
 
@@ -44,8 +44,6 @@ GraphPlot::GraphPlot(QWidget *parent)
             = timeRightZadan = timeRightZolotPosit = timeRightShtokPosit =
             timePistonLoss = timeStockLoss = timeDiffForce = all;
 
-//    SetGraph_fT();
-//    SetGraph_tfT();
     SetGraphForce();
     SetGraphZadanLeft();
     SetGraphZolotPositionLeft();
@@ -100,8 +98,6 @@ GraphPlot::GraphPlot(QWidget *parent)
     timer = new QTimer();
     timer->stop();
     timer->setInterval(1000);
-//    connect( timer, &QTimer::timeout, this, &GraphPlot::handlePistonPlot );
-//    connect( timer, &QTimer::timeout, this, &GraphPlot::handle_fT_tfT );
     connect( timer, &QTimer::timeout, this, &GraphPlot::handle_fT_tfT );
 
     connect( timer, &QTimer::timeout, this, &GraphPlot::handleForcePlot );
@@ -112,6 +108,7 @@ GraphPlot::GraphPlot(QWidget *parent)
 
 GraphPlot::~GraphPlot()
 {
+    SaveConfigure();
     delete sensor;
     delete plc;
     delete timer;
@@ -295,15 +292,17 @@ void GraphPlot::handleCalcTabPlot()
     chartStockLoss->scroll( x_StockLoss, 0 );
 }
 
+// объединил fT и tfT в один обработчик, так как приходят одновременно с контроллера
 void GraphPlot::handle_fT_tfT()
 {
     if( is_new_sensor ){
-        fT_graph->ChartIncrement( ui->gb_fT_L->isChecked(), sens_cylinders.fT_L,
-                                  ui->gb_fT_R->isChecked(), sens_cylinders.fT_R);
-        tfT_graph->ChartIncrement( ui->gb_tfT_L->isChecked(), sens_cylinders.tfT_L,
-                                   ui->gb_tfT_R->isChecked(), sens_cylinders.tfT_R );
+        fT_graph->ChartIncrement( ui->gb_fT_L->isChecked(), sens_data.fT_L,
+                                  ui->gb_fT_R->isChecked(), sens_data.fT_R);
+        tfT_graph->ChartIncrement( ui->gb_tfT_L->isChecked(), sens_data.tfT_L,
+                                   ui->gb_tfT_R->isChecked(), sens_data.tfT_R );
 
-    } else if(isDemo_fT_tfT) {
+    }
+    else if(isDemo_fT_tfT) {
         fT_graph->ChartIncrement( ui->gb_fT_L->isChecked(), QRandomGenerator::global()->bounded(0,10),
                                   ui->gb_fT_R->isChecked(), QRandomGenerator::global()->bounded(0,10));
 
@@ -899,11 +898,79 @@ void GraphPlot::SensorDataUpdate(SensorPack pack)
                                                     : pack.adc3_data.at(ui->cb_adc1_tfT_L->currentIndex());
     }
 
-    sens_cylinders.fT_R = map( _ft_R, 0, 4095, 0, 100 );
-    sens_cylinders.fT_L = map( _ft_L, 0, 4095, 0, 100 );
-    sens_cylinders.tfT_R = map( _tfT_R, 0, 4095, -10, 80 );
-    sens_cylinders.tfT_L = map( _tfT_L, 0, 4095, -10, 80 );
+    sens_data.fT_R = map( _ft_R, 0, 4095, 0, 100 );
+    sens_data.fT_L = map( _ft_L, 0, 4095, 0, 100 );
+    sens_data.tfT_R = map( _tfT_R, 0, 4095, -10, 80 );
+    sens_data.tfT_L = map( _tfT_L, 0, 4095, -10, 80 );
     is_new_sensor = true;
+}
+
+void GraphPlot::LoadConfigure()
+{
+    QString filename = "../sensor.json";
+    QFile file;
+    file.setFileName(filename);
+    if(!file.open(QIODevice::ReadOnly | QIODevice::Text) ){
+        qDebug() << "ERROR WHEN OPENING CONFIG FILE" << filename << file.errorString();
+    }
+    QJsonParseError err;
+    QJsonDocument src = QJsonDocument::fromJson( QString(file.readAll()).toUtf8(), &err);
+    file.close();
+
+    QJsonObject jsonParse = src.object().value( "gb_fT_L" ).toObject();
+    ui->gb_fT_L->setChecked( jsonParse.value( "isChecked" ).toBool() );
+    ui->rb_adc1_fT_L->setChecked( jsonParse.value( "isAdc1" ).toBool() );
+    ui->rb_adc3_fT_L->setChecked( jsonParse.value( "isAdc3" ).toBool() );
+    ui->cb_adc1_fT_L->setCurrentIndex( jsonParse.value( "adc1index" ).toInt() );
+    ui->cb_adc3_fT_L->setCurrentIndex( jsonParse.value( "adc3index" ).toInt() );
+    ui->chb_filt_fT_L->setChecked(jsonParse.value( "isFilter"  ).toBool() );
+
+    jsonParse = src.object().value( "gb_fT_R" ).toObject();
+    ui->gb_fT_R->setChecked( jsonParse.value( "isChecked" ).toBool() );
+    ui->rb_adc1_fT_R->setChecked( jsonParse.value( "isAdc1" ).toBool() );
+    ui->rb_adc3_fT_R->setChecked( jsonParse.value( "isAdc3" ).toBool() );
+    ui->cb_adc1_fT_R->setCurrentIndex( jsonParse.value( "adc1index" ).toInt() );
+    ui->cb_adc3_fT_R->setCurrentIndex( jsonParse.value( "adc3index" ).toInt() );
+    ui->chb_filt_fT_R->setChecked(jsonParse.value( "isFilter"  ).toBool() );
+
+    jsonParse = src.object().value( "gb_tfT_L" ).toObject();
+    ui->gb_tfT_L->setChecked( jsonParse.value( "isChecked" ).toBool() );
+    ui->rb_adc1_tfT_L->setChecked( jsonParse.value( "isAdc1" ).toBool() );
+    ui->rb_adc3_tfT_L->setChecked( jsonParse.value( "isAdc3" ).toBool() );
+    ui->cb_adc1_tfT_L->setCurrentIndex( jsonParse.value( "adc1index" ).toInt() );
+    ui->cb_adc3_tfT_L->setCurrentIndex( jsonParse.value( "adc3index" ).toInt() );
+    ui->chb_filt_tfT_L->setChecked(jsonParse.value( "isFilter"  ).toBool() );
+
+    jsonParse = src.object().value( "gb_tfT_R" ).toObject();
+    ui->gb_tfT_R->setChecked( jsonParse.value( "isChecked" ).toBool() );
+    ui->rb_adc1_tfT_R->setChecked( jsonParse.value( "isAdc1" ).toBool() );
+    ui->rb_adc3_tfT_R->setChecked( jsonParse.value( "isAdc3" ).toBool() );
+    ui->cb_adc1_tfT_R->setCurrentIndex( jsonParse.value( "adc1index" ).toInt() );
+    ui->cb_adc3_tfT_R->setCurrentIndex( jsonParse.value( "adc3index" ).toInt() );
+    ui->chb_filt_tfT_R->setChecked(jsonParse.value( "isFilter"  ).toBool() );
+}
+
+void GraphPlot::SaveConfigure()
+{
+    QString filename = "../sensor.json";
+    QFile file;
+    file.setFileName(filename);
+    if(!file.open(QIODevice::ReadOnly | QIODevice::Text) ){
+        qDebug() << "ERROR WHEN OPENING CONFIG FILE" << filename << file.errorString();
+    }
+    QJsonParseError err;
+    QJsonDocument src = QJsonDocument::fromJson( QString(file.readAll()).toUtf8(), &err);
+    file.close();
+
+    QJsonObject jsonParse = src.object().value( "gb_fT_L" ).toObject();
+    jsonParse.value( "isChecked" ) = ui->gb_fT_L->isChecked();
+    jsonParse.value( "isAdc1" )    = ui->rb_adc1_fT_L->isChecked();
+    jsonParse.value( "isAdc3" )    = ui->rb_adc3_fT_L->isChecked();
+    jsonParse.value( "adc1index" ) = ui->cb_adc1_fT_L->currentIndex();
+    jsonParse.value( "adc3index" ) = ui->cb_adc3_fT_L->currentIndex();
+    jsonParse.value( "isFilter"  ) = ui->chb_filt_fT_L->isChecked();
+
+
 }
 
 //void GraphPlot::PLC_DataUpdate(PLC_Data data)

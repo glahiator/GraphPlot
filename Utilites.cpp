@@ -11,8 +11,8 @@ quint8  HighByte(quint16 value) { return quint8(value >> 8);}
 quint8  LowByte(quint16 value)  { return quint8(value & quint8(0xff)); }
 quint8  Get32_hh(qint32 value)   { return quint8(value>>24); }
 quint8  Get32_h(qint32 value)    { return quint8(value>>16); }
-quint8  Get32_l(qint32 value)    { return quint8(value>>8); }
-quint8  Get32_ll(qint32 value)   { return quint8(value); }
+quint8  Get32_L(qint32 value)    { return quint8(value>>8); }
+quint8  Get32_Ll(qint32 value)   { return quint8(value); }
 quint8  GetU_32hh(quint32 value) { return quint8(value>>24); }
 quint8  GetU_32h(quint32 value)  { return quint8(value>>16); }
 quint8  GetU_32l(quint32 value)  { return quint8(value>>8);  }

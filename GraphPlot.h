@@ -39,8 +39,6 @@ public:
     void handleRightTabPlot();
     void handleCalcTabPlot();
 
-    void SetGraph_fT();
-    void SetGraph_tfT();
     // left tab graphs
     void SetGraphForce();
     void SetGraphZadanLeft();
@@ -62,6 +60,10 @@ public:
 
     void SensorDataUpdate( SensorPack pack );
 //    void PLC_DataUpdate( PLC_Data data );
+
+    // утилиты для конфигурации
+    void LoadConfigure();
+    void SaveConfigure();
 
 private Q_SLOTS:
     void updateUI();
@@ -167,6 +169,6 @@ private:
     bool is_new_sensor;
 
     bool is_new_force;
-    SensorVals sens_cylinders;
+    SensorVals sens_data;
 };
 #endif // GRAPHPLOT_H
