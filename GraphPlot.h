@@ -33,20 +33,21 @@ class GraphPlot : public QMainWindow
 public:
     GraphPlot(QWidget *parent = nullptr);
     ~GraphPlot();
+    UniqueGraph * fY_graph;
+    UniqueGraph * fS_graph;
 
     UniqueGraph * fT_graph;
     UniqueGraph * tfT_graph;
     void handle_fT_tfT();
 
-    void handleForcePlot();
+    UniqueGraph * pA_graph;
+    UniqueGraph * pB_graph;
+    void handle_pA_pB_fY_fS();
+
     void handleRightTabPlot();
     void handleCalcTabPlot();
 
     // left tab graphs
-    void SetGraphForce();
-    void SetGraphZadanLeft();
-    void SetGraphZolotPositionLeft();
-    void SetGraphShtokPositionLeft();
     void TabGraphShowingLeft();
     // right tab graphs
     void SetGraphPressureRight();
@@ -86,31 +87,6 @@ private:
     bool isDemo_fT_tfT;
 
     void SetDemo();
-
-    QLineSeries *ser_left_piston_pressure;
-    QLineSeries *ser_left_rod_pressure;
-    QDateTimeAxis *ax_X_LeftPressure;
-    QValueAxis *ax_Y_LeftPressure;
-    QChart *chartLeftPressure;
-    QDateTime timeLeftPressure;
-
-    QValueAxis *ax_Y_LeftZadan;
-    QDateTimeAxis *ax_X_LeftZadan;
-    QLineSeries *ser_left_zadan;
-    QDateTime timeLeftZadan;
-    QChart * chartLeftZadan;
-
-    QValueAxis *ax_Y_LeftShtokPosit;
-    QDateTimeAxis *ax_X_LeftShtokPosit;
-    QLineSeries *ser_left_ShtokPosit;
-    QDateTime timeLeftShtokPosit;
-    QChart * chartLeftShtokPosit;
-
-    QValueAxis *ax_Y_LeftZolotPosit;
-    QDateTimeAxis *ax_X_LeftZolotPosit;
-    QLineSeries *ser_left_ZolotPosit;
-    QDateTime timeLeftZolotPosit;
-    QChart * chartLeftZolotPosit;
 
     QLineSeries *ser_right_piston_pressure;
     QLineSeries *ser_right_rod_pressure;

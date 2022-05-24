@@ -7,7 +7,7 @@ UniqueGraph::UniqueGraph(QString _title, QObject *parent) : QObject(parent)
     title = _title;
 }
 
-void UniqueGraph::Configure( QString _yAxisText )
+void UniqueGraph::Configure(QString _yAxisText , QPoint _yRange, int _yTickCount)
 {
     yAxisText = _yAxisText;
     series_left = new QLineSeries();
@@ -48,16 +48,25 @@ void UniqueGraph::Configure( QString _yAxisText )
     series_right->attachAxis( axis_Y );
 
     axis_X->setRange(temp_time, time.addSecs(1));
-    axis_Y->setRange(0, 100);
+//    axis_Y->setRange(0, 100);
+    axis_Y->setRange(_yRange.x(), _yRange.y());
+
     axis_X->setTickCount(10);
-    axis_Y->setTickCount(11);
+//    axis_Y->setTickCount(11);
+    axis_Y->setTickCount(_yTickCount);
     chart->setTitle(title);
 }
 
-void UniqueGraph::ChartIncrement(bool _isLeft, qreal _leftVal, bool _isRight, qreal _rightVal )
+void UniqueGraph::ChartIncrement_if(bool _isLeft, qreal _leftVal, bool _isRight, qreal _rightVal )
 {
     if( _isLeft )  series_left->append(  time.toMSecsSinceEpoch(),  _leftVal);
     if( _isRight ) series_right->append( time.toMSecsSinceEpoch(),  _rightVal);
+}
+
+void UniqueGraph::ChartIncrement(qreal _leftVal, qreal _rightVal)
+{
+    series_left->append(  time.toMSecsSinceEpoch(),  _leftVal);
+    series_right->append( time.toMSecsSinceEpoch(),  _rightVal);
 }
 
 void UniqueGraph::ChartScroll(qreal plotWidth)

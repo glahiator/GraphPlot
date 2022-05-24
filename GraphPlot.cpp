@@ -23,10 +23,28 @@ GraphPlot::GraphPlot(QWidget *parent)
     is_PLC_new_data_left = false;
     is_PLC_new_data_right = false;
 
+    pA_graph = new UniqueGraph( "Давление в поршневой полости", this);
+    pB_graph = new UniqueGraph( "Давление в штоковой полости", this);
+    fY_graph = new UniqueGraph( "Обратная связь положения золотника проп. клапана", this);
+    fS_graph = new UniqueGraph( "Обратная связь положения штока", this);
+
+    pA_graph->Configure("Давление, бар", QPoint(0,250), 6);
+    pB_graph->Configure("Давление, бар", QPoint(0,250), 6);
+    fY_graph->Configure("Положение золотника, %", QPoint(-100,100), 9);
+    fS_graph->Configure("Положение штока, мм",QPoint(0,25), 6);
+    ui->view_pA->setChart(pA_graph->chart);
+    ui->view_pB->setChart(pB_graph->chart);
+    ui->view_fY->setChart(fY_graph->chart);
+    ui->view_fS->setChart(fS_graph->chart);
+    ui->view_pA->setRenderHint( QPainter::Antialiasing);
+    ui->view_pB->setRenderHint( QPainter::Antialiasing);
+    ui->view_fY->setRenderHint( QPainter::Antialiasing);
+    ui->view_fS->setRenderHint( QPainter::Antialiasing);
+
     fT_graph  = new UniqueGraph( "Объемный расход", this);
     tfT_graph = new UniqueGraph( "Температура расхода", this);
-    fT_graph->Configure( "Расход, л/мин");
-    tfT_graph->Configure("Температура, град");
+    fT_graph->Configure( "Расход, л/мин",    QPoint(0,100), 11);
+    tfT_graph->Configure("Температура, град",QPoint(0,100), 11);
     ui->view_fT->setChart(   fT_graph->chart);
     ui->view_tfT->setChart( tfT_graph->chart );
     ui->view_fT->setRenderHint( QPainter::Antialiasing);
@@ -40,14 +58,14 @@ GraphPlot::GraphPlot(QWidget *parent)
 //    connect( plc, &PLC_Connector::plcDataReceive, this, &GraphPlot::PLC_DataUpdate );
 
     QDateTime all(QDateTime::currentDateTime().date(), QDateTime::currentDateTime().time().addSecs(-10));
-    timeLeftPressure = timeLeftZadan = timeLeftZolotPosit = timeLeftShtokPosit = timeRightPressure
+    timeRightPressure
             = timeRightZadan = timeRightZolotPosit = timeRightShtokPosit =
             timePistonLoss = timeStockLoss = timeDiffForce = all;
 
-    SetGraphForce();
-    SetGraphZadanLeft();
-    SetGraphZolotPositionLeft();
-    SetGraphShtokPositionLeft();
+//    SetGraphForce();
+//    SetGraphZadanLeft();
+//    SetGraphZolotPositionLeft();
+//    SetGraphShtokPositionLeft();
 
     SetGraphPressureRight();
     SetGraphZadanRight();
@@ -99,8 +117,9 @@ GraphPlot::GraphPlot(QWidget *parent)
     timer->stop();
     timer->setInterval(1000);
     connect( timer, &QTimer::timeout, this, &GraphPlot::handle_fT_tfT );
+    connect( timer, &QTimer::timeout, this, &GraphPlot::handle_pA_pB_fY_fS );
 
-    connect( timer, &QTimer::timeout, this, &GraphPlot::handleForcePlot );
+//    connect( timer, &QTimer::timeout, this, &GraphPlot::handleForcePlot );
     connect( timer, &QTimer::timeout, this, &GraphPlot::handleRightTabPlot );
     connect( timer, &QTimer::timeout, this, &GraphPlot::handleCalcTabPlot );
     timer->start();
@@ -125,7 +144,7 @@ void GraphPlot::updateUI()
     //![7]
     ui->view_fT->chart()->setTheme(theme);
     ui->view_tfT->chart()->setTheme(theme);
-    ui->graphView3->chart()->setTheme(theme);
+    ui->view_pA->chart()->setTheme(theme);
     //![7]
 
 
@@ -168,47 +187,6 @@ void GraphPlot::SetDemo()
     isDemo_fT_tfT = ui->act_demo->isChecked();
 }
 
-void GraphPlot::handleForcePlot()
-{
-    qreal x = ui->graphView3->chart()->plotArea().width() / ax_X_LeftPressure->tickCount();
-    qreal y = (ax_X_LeftPressure->max().toMSecsSinceEpoch() - ax_X_LeftPressure->min().toMSecsSinceEpoch()) / ax_X_LeftPressure->tickCount();
-    timeLeftPressure = timeLeftPressure.addMSecs(y);
-
-    qreal x_zadan = ui->tab_left_gv_zadan_klapan->chart()->plotArea().width() / ax_X_LeftZadan->tickCount();
-    qreal y_zadan = ( ax_X_LeftZadan->max().toMSecsSinceEpoch() - ax_X_LeftZadan->min().toMSecsSinceEpoch() ) / ax_X_LeftZadan->tickCount();
-    timeLeftZadan = timeLeftZadan.addMSecs(y_zadan);
-
-    qreal x_zolot = ui->tab_left_gv_zolot_position->chart()->plotArea().width() / ax_X_LeftZolotPosit->tickCount();
-    qreal y_zolot = ( ax_X_LeftZolotPosit->max().toMSecsSinceEpoch() - ax_X_LeftZolotPosit->min().toMSecsSinceEpoch() ) / ax_X_LeftZolotPosit->tickCount();
-    timeLeftZolotPosit = timeLeftZolotPosit.addMSecs(y_zolot);
-
-    qreal x_shtok = ui->tab_left_gv_position_shtok->chart()->plotArea().width() / ax_X_LeftShtokPosit->tickCount();
-    qreal y_shtok = ( ax_X_LeftShtokPosit->max().toMSecsSinceEpoch() - ax_X_LeftShtokPosit->min().toMSecsSinceEpoch() ) / ax_X_LeftShtokPosit->tickCount();
-    timeLeftShtokPosit = timeLeftShtokPosit.addMSecs(y_shtok);
-
-    if( is_PLC_new_data_left ){
-//        ser_left_piston_pressure->append(timeLeftPressure.toMSecsSinceEpoch(),  plc_Data.left.pA);
-//        ser_left_rod_pressure->append(   timeLeftPressure.toMSecsSinceEpoch(), plc_Data.left.pB );
-//        ser_left_zadan->append( timeLeftZadan.toMSecsSinceEpoch(),  plc_Data.left.sY);
-//        ser_left_ZolotPosit->append(timeLeftZolotPosit.toMSecsSinceEpoch(), plc_Data.left.fY);
-//        ser_left_ShtokPosit->append(timeLeftShtokPosit.toMSecsSinceEpoch(), plc_Data.left.fS);
-
-        is_PLC_new_data_left = false;
-    }
-    else{
-        ser_left_piston_pressure->append(timeLeftPressure.toMSecsSinceEpoch(),  QRandomGenerator::global()->bounded(1,250));
-        ser_left_rod_pressure->append(timeLeftPressure.toMSecsSinceEpoch(),  QRandomGenerator::global()->bounded(1,250));
-        ser_left_zadan->append( timeLeftZadan.toMSecsSinceEpoch(),  QRandomGenerator::global()->bounded(-100,100));
-        ser_left_ZolotPosit->append(timeLeftZolotPosit.toMSecsSinceEpoch(), QRandomGenerator::global()->bounded(-100,100));
-        ser_left_ShtokPosit->append(timeLeftShtokPosit.toMSecsSinceEpoch(), QRandomGenerator::global()->bounded(0,25));
-    }
-
-    chartLeftShtokPosit->scroll( x_shtok, 0 );
-    chartLeftPressure->scroll(x, 0);
-    chartLeftZadan->scroll( x_zadan, 0 );
-    chartLeftZolotPosit->scroll( x_zolot, 0 );
-
-}
 void GraphPlot::handleRightTabPlot()
 {
     qreal x = ui->tab_right_gv_pressure->chart()->plotArea().width() / ax_X_RightPressure->tickCount();
@@ -296,17 +274,17 @@ void GraphPlot::handleCalcTabPlot()
 void GraphPlot::handle_fT_tfT()
 {
     if( is_new_sensor ){
-        fT_graph->ChartIncrement( ui->gb_fT_L->isChecked(), sens_data.fT_L,
+        fT_graph->ChartIncrement_if( ui->gb_fT_L->isChecked(), sens_data.fT_L,
                                   ui->gb_fT_R->isChecked(), sens_data.fT_R);
-        tfT_graph->ChartIncrement( ui->gb_tfT_L->isChecked(), sens_data.tfT_L,
+        tfT_graph->ChartIncrement_if( ui->gb_tfT_L->isChecked(), sens_data.tfT_L,
                                    ui->gb_tfT_R->isChecked(), sens_data.tfT_R );
 
     }
     else if(isDemo_fT_tfT) {
-        fT_graph->ChartIncrement( ui->gb_fT_L->isChecked(), QRandomGenerator::global()->bounded(0,10),
+        fT_graph->ChartIncrement_if( ui->gb_fT_L->isChecked(), QRandomGenerator::global()->bounded(0,10),
                                   ui->gb_fT_R->isChecked(), QRandomGenerator::global()->bounded(0,10));
 
-        tfT_graph->ChartIncrement( ui->gb_tfT_L->isChecked(), QRandomGenerator::global()->bounded(0,5),
+        tfT_graph->ChartIncrement_if( ui->gb_tfT_L->isChecked(), QRandomGenerator::global()->bounded(0,5),
                                    ui->gb_tfT_R->isChecked(), QRandomGenerator::global()->bounded(0,5) );
     }
 
@@ -314,190 +292,53 @@ void GraphPlot::handle_fT_tfT()
     tfT_graph->ChartScroll( ui->view_tfT->chart()->plotArea().width() );
 }
 
-void GraphPlot::SetGraphForce()
+void GraphPlot::handle_pA_pB_fY_fS()
 {
-    ser_left_piston_pressure = new QLineSeries();
-    ser_left_piston_pressure->setName("Поршень");
+    pA_graph->ChartIncrement( QRandomGenerator::global()->bounded(0,40),
+                              QRandomGenerator::global()->bounded(0,40));
 
-    ser_left_rod_pressure = new QLineSeries();
-    ser_left_rod_pressure->setName("Шток");
+    pB_graph->ChartIncrement( QRandomGenerator::global()->bounded(0,40),
+                              QRandomGenerator::global()->bounded(0,40));
 
-    QDateTime temp_time = timeLeftPressure;
-    ser_left_piston_pressure->append(timeLeftPressure.toMSecsSinceEpoch(), 0);
-    ser_left_rod_pressure->append(timeLeftPressure.toMSecsSinceEpoch(), 0);
+    fY_graph->ChartIncrement( QRandomGenerator::global()->bounded(-40,40),
+                              QRandomGenerator::global()->bounded(-40,40));
 
-    for( int i = 1; i <=10; i++ ){
-        timeLeftPressure = timeLeftPressure.addSecs(1);
-        ser_left_piston_pressure->append(timeLeftPressure.toMSecsSinceEpoch(), 0);
-        ser_left_rod_pressure->append(timeLeftPressure.toMSecsSinceEpoch(), 0);
-    }
+    fS_graph->ChartIncrement( QRandomGenerator::global()->bounded(0,15),
+                              QRandomGenerator::global()->bounded(0,15));
 
-    ax_X_LeftPressure = new QDateTimeAxis;
-    ax_Y_LeftPressure = new QValueAxis;
-    ax_X_LeftPressure->setTitleText("Время, сек");
-    ax_X_LeftPressure->setFormat("hh:mm:ss");
-    ax_Y_LeftPressure->setTitleText("Давление, бар");
 
-    chartLeftPressure = new QChart();
-    chartLeftPressure->legend()->setAlignment(Qt::AlignRight);
-    chartLeftPressure->legend()->hide();
-    chartLeftPressure->addSeries(ser_left_piston_pressure);
-    chartLeftPressure->addSeries(ser_left_rod_pressure);
-    chartLeftPressure->addAxis(ax_X_LeftPressure, Qt::AlignBottom);
-    chartLeftPressure->addAxis(ax_Y_LeftPressure, Qt::AlignLeft);
-    chartLeftPressure->setAnimationOptions(QChart::SeriesAnimations);
-
-    ser_left_piston_pressure->attachAxis( ax_X_LeftPressure );
-    ser_left_piston_pressure->attachAxis( ax_Y_LeftPressure );
-    ser_left_rod_pressure->attachAxis( ax_X_LeftPressure );
-    ser_left_rod_pressure->attachAxis( ax_Y_LeftPressure );
-
-    ax_X_LeftPressure->setRange(temp_time, timeLeftPressure.addSecs(1));
-    ax_Y_LeftPressure->setRange(0, 250);
-    ax_X_LeftPressure->setTickCount(10);
-    ax_Y_LeftPressure->setTickCount(5);
-    chartLeftPressure->setTitle("Давление в поршневой и штоковой полости");
-
-    ui->graphView3->setChart(chartLeftPressure);
-    ui->graphView3->setRenderHint(QPainter::Antialiasing);
-    ui->graphView3->setRubberBand( QChartView::RectangleRubberBand );
-}
-void GraphPlot::SetGraphZadanLeft()
-{
-    ser_left_zadan = new QLineSeries();
-    ser_left_zadan->setName("Задание");
-
-    QDateTime temp_time = timeLeftZadan;
-    ser_left_zadan->append(timeLeftZadan.toMSecsSinceEpoch(), 0);
-
-    for( int i = 1; i <=10; i++ ){
-        timeLeftZadan = timeLeftZadan.addSecs(1);
-        ser_left_zadan->append(timeLeftZadan.toMSecsSinceEpoch(), 0);
-    }
-
-    ax_X_LeftZadan =  new QDateTimeAxis;
-    ax_X_LeftZadan->setTitleText("Время, сек");
-    ax_X_LeftZadan->setFormat("hh:mm:ss");
-    ax_Y_LeftZadan = new QValueAxis;
-    ax_Y_LeftZadan->setTitleText("Задание на клапан, %");
-    chartLeftZadan = new QChart();
-
-    chartLeftZadan->legend()->setAlignment(Qt::AlignRight);
-    chartLeftZadan->legend()->hide();
-    chartLeftZadan->addSeries(ser_left_zadan);
-    chartLeftZadan->addAxis(ax_X_LeftZadan, Qt::AlignBottom);
-    chartLeftZadan->addAxis(ax_Y_LeftZadan, Qt::AlignLeft);
-    chartLeftZadan->setAnimationOptions(QChart::SeriesAnimations);
-
-    ser_left_zadan->attachAxis(ax_X_LeftZadan);
-    ser_left_zadan->attachAxis(ax_Y_LeftZadan);
-    ax_X_LeftZadan->setRange(temp_time, timeLeftZadan.addSecs(1));
-    ax_X_LeftZadan->setTickCount(10);
-    ax_Y_LeftZadan->setRange( -100, 100 );
-    ax_Y_LeftZadan->setTickCount(5);
-    chartLeftZadan->setTitle("Задание на проп. клапан");
-    ui->tab_left_gv_zadan_klapan->setChart(chartLeftZadan);
-
-    ui->tab_left_gv_zadan_klapan->setRenderHint(QPainter::Antialiasing);
-    ui->tab_left_gv_zadan_klapan->setRubberBand( QChartView::RectangleRubberBand );
+    pA_graph->ChartScroll(  ui->view_pA->chart()->plotArea().width()  );
+    pB_graph->ChartScroll(  ui->view_pB->chart()->plotArea().width()  );
+    fY_graph->ChartScroll(  ui->view_fY->chart()->plotArea().width()  );
+    fS_graph->ChartScroll(  ui->view_fS->chart()->plotArea().width()  );
 
 }
-void GraphPlot::SetGraphZolotPositionLeft()
-{
-    ser_left_ZolotPosit = new QLineSeries();
-    ser_left_ZolotPosit->setName("Положение золотника");
-    QDateTime temp_time = timeLeftZolotPosit;
-    ser_left_ZolotPosit->append( timeLeftZolotPosit.toMSecsSinceEpoch(), 0 );
-    for( int i = 1; i <=10; i++ ){
-        timeLeftZolotPosit = timeLeftZolotPosit.addSecs(1);
-        ser_left_ZolotPosit->append(timeLeftZolotPosit.toMSecsSinceEpoch(), 0);
-    }
-    ax_X_LeftZolotPosit = new QDateTimeAxis;
-    ax_X_LeftZolotPosit->setTitleText("Время, сек");
-    ax_X_LeftZolotPosit->setFormat("hh:mm:ss");
-    ax_Y_LeftZolotPosit = new QValueAxis;
-    ax_Y_LeftZolotPosit->setTitleText("Положение золотника, %");
-    chartLeftZolotPosit = new QChart();
 
-    chartLeftZolotPosit->legend()->setAlignment(Qt::AlignRight);
-    chartLeftZolotPosit->legend()->hide();
-    chartLeftZolotPosit->addSeries(ser_left_ZolotPosit);
-    chartLeftZolotPosit->addAxis(ax_X_LeftZolotPosit, Qt::AlignBottom);
-    chartLeftZolotPosit->addAxis(ax_Y_LeftZolotPosit, Qt::AlignLeft);
-    chartLeftZolotPosit->setAnimationOptions(QChart::SeriesAnimations);
-
-    ser_left_ZolotPosit->attachAxis(ax_X_LeftZolotPosit);
-    ser_left_ZolotPosit->attachAxis(ax_Y_LeftZolotPosit);
-    ax_X_LeftZolotPosit->setRange(temp_time, timeLeftZolotPosit.addSecs(1));
-    ax_X_LeftZolotPosit->setTickCount(10);
-    ax_Y_LeftZolotPosit->setRange( -100, 100 );
-    ax_Y_LeftZolotPosit->setTickCount(5);
-    chartLeftZolotPosit->setTitle("Обратная связь положения золотника проп. клапана");
-    ui->tab_left_gv_zolot_position->setChart(chartLeftZolotPosit);
-    ui->tab_left_gv_zolot_position->setRenderHint(QPainter::Antialiasing);
-    ui->tab_left_gv_zolot_position->setRubberBand( QChartView::RectangleRubberBand );
-}
-void GraphPlot::SetGraphShtokPositionLeft()
-{
-    ser_left_ShtokPosit = new QLineSeries();
-    ser_left_ShtokPosit->setName("Положение штока");
-    QDateTime temp_time = timeLeftShtokPosit;
-    ser_left_ShtokPosit->append( timeLeftShtokPosit.toMSecsSinceEpoch(), 0 );
-    for( int i = 1; i <=10; i++ ){
-        timeLeftShtokPosit = timeLeftShtokPosit.addSecs(1);
-        ser_left_ShtokPosit->append(timeLeftShtokPosit.toMSecsSinceEpoch(), 0);
-    }
-    ax_X_LeftShtokPosit = new QDateTimeAxis;
-    ax_X_LeftShtokPosit->setTitleText("Время, сек");
-    ax_X_LeftShtokPosit->setFormat("hh:mm:ss");
-    ax_Y_LeftShtokPosit = new QValueAxis;
-    ax_Y_LeftShtokPosit->setTitleText("Положение штока, мм");
-    chartLeftShtokPosit = new QChart();
-
-    chartLeftShtokPosit->legend()->setAlignment(Qt::AlignRight);
-    chartLeftShtokPosit->legend()->hide();
-    chartLeftShtokPosit->addSeries(ser_left_ShtokPosit);
-    chartLeftShtokPosit->addAxis(ax_X_LeftShtokPosit, Qt::AlignBottom);
-    chartLeftShtokPosit->addAxis(ax_Y_LeftShtokPosit, Qt::AlignLeft);
-    chartLeftShtokPosit->setAnimationOptions(QChart::SeriesAnimations);
-
-    ser_left_ShtokPosit->attachAxis(ax_X_LeftShtokPosit);
-    ser_left_ShtokPosit->attachAxis(ax_Y_LeftShtokPosit);
-    ax_X_LeftShtokPosit->setRange(temp_time, timeLeftShtokPosit.addSecs(1));
-    ax_X_LeftShtokPosit->setTickCount(10);
-    ax_Y_LeftShtokPosit->setRange( 0, 25 );
-    ax_Y_LeftShtokPosit->setTickCount(5);
-    chartLeftShtokPosit->setTitle("Обратная связь положения штока");
-    ui->tab_left_gv_position_shtok->setChart(chartLeftShtokPosit);
-    ui->tab_left_gv_position_shtok->setRenderHint(QPainter::Antialiasing);
-    ui->tab_left_gv_position_shtok->setRubberBand( QChartView::RectangleRubberBand );
-
-}
 void GraphPlot::TabGraphShowingLeft()
 {
     if( ui->tab_lef_cb_position_shtok->isChecked() ){
-        ui->tab_left_gv_position_shtok->show();
+        ui->view_fS->show();
     }
     else{
-        ui->tab_left_gv_position_shtok->hide();
+        ui->view_fS->hide();
     }
     if( ui->tab_lef_cb_position_zolot->isChecked() ){
-        ui->tab_left_gv_zolot_position->show();
+        ui->view_fY->show();
     }
     else{
-        ui->tab_left_gv_zolot_position->hide();
+        ui->view_fY->hide();
     }
     if( ui->tab_lef_cb_press_pist_rod->isChecked() ){
-        ui->graphView3->show();
+        ui->view_pA->show();
     }
     else{
-        ui->graphView3->hide();
+        ui->view_pA->hide();
     }
     if( ui->tab_lef_cb_zadan_klapan->isChecked() ){
-        ui->tab_left_gv_zadan_klapan->show();
+        ui->view_pB->show();
     }
     else{
-        ui->tab_left_gv_zadan_klapan->hide();
+        ui->view_pB->hide();
     }
 }
 

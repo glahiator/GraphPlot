@@ -24,7 +24,7 @@
     <item row="0" column="1">
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tab_3">
        <attribute name="title">
@@ -891,7 +891,7 @@
         <item>
          <layout class="QGridLayout" name="gridLayout_4">
           <item row="0" column="0">
-           <widget class="QChartView" name="graphView3">
+           <widget class="QChartView" name="view_pA">
             <property name="minimumSize">
              <size>
               <width>230</width>
@@ -901,7 +901,7 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QChartView" name="tab_left_gv_zadan_klapan">
+           <widget class="QChartView" name="view_pB">
             <property name="minimumSize">
              <size>
               <width>230</width>
@@ -911,7 +911,7 @@
            </widget>
           </item>
           <item row="1" column="0">
-           <widget class="QChartView" name="tab_left_gv_zolot_position">
+           <widget class="QChartView" name="view_fY">
             <property name="minimumSize">
              <size>
               <width>230</width>
@@ -921,7 +921,7 @@
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QChartView" name="tab_left_gv_position_shtok">
+           <widget class="QChartView" name="view_fS">
             <property name="minimumSize">
              <size>
               <width>230</width>

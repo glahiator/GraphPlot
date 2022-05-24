@@ -6,6 +6,13 @@
 #include <QString>
 #include <QTimer>
 #include <QVariant>
+#include "snap7.h"
+
+#ifdef OS_WINDOWS
+# define WIN32_LEAN_AND_MEAN
+# include <windows.h>
+#endif
+
 
 #include "Utilites.h"
 
@@ -37,6 +44,7 @@ public:
     void SendReceivedPack();
 
     QTimer * timer;
+    TS7Client *Client;
 
 private:
     quint16 bind_port;
