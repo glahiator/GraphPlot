@@ -59,6 +59,23 @@
          <layout class="QVBoxLayout" name="verticalLayout">
           <item>
            <widget class="QGroupBox" name="gb_fT_L">
+            <property name="styleSheet">
+             <string notr="true"> QGroupBox::indicator {
+
+
+ }
+
+
+ QGroupBox::indicator:unchecked {
+	 image: url(:/images/img/uncheck.png);
+ }
+
+
+ QGroupBox::indicator:checked {
+	 image: url(:/icons/img/check.png);
+
+ }</string>
+            </property>
             <property name="title">
              <string>Левый цилиндр</string>
             </property>

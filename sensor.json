@@ -2,9 +2,9 @@
     "gb_fT_L": {
         "adc1index": 7,
         "adc3index": 7,
-        "isAdc1": true,
-        "isAdc3": false,
-        "isChecked": true,
+        "isAdc1": false,
+        "isAdc3": true,
+        "isChecked": false,
         "isFilter": false
     },
     "gb_fT_R": {

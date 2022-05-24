@@ -989,6 +989,7 @@ void GraphPlot::SaveConfigure()
     mini_root.insert( "gb_tfT_L",  tfT_L_conf);
     mini_root.insert( "gb_tfT_R",  tfT_R_conf);
 
+
     QJsonDocument doc = QJsonDocument();
     doc.setObject(mini_root);
     QFile file;
