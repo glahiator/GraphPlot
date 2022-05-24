@@ -25,21 +25,23 @@ GraphPlot::GraphPlot(QWidget *parent)
 
     pA_graph = new UniqueGraph( "Давление в поршневой полости", this);
     pB_graph = new UniqueGraph( "Давление в штоковой полости", this);
+    sY_graph = new UniqueGraph( "Задание на проп.клапан", this);
     fY_graph = new UniqueGraph( "Обратная связь положения золотника проп. клапана", this);
     fS_graph = new UniqueGraph( "Обратная связь положения штока", this);
 
     pA_graph->Configure("Давление, бар", QPoint(0,250), 6);
     pB_graph->Configure("Давление, бар", QPoint(0,250), 6);
     fY_graph->Configure("Положение золотника, %", QPoint(-100,100), 9);
+    sY_graph->Configure("Задание, %", QPoint(-100,100), 9);
     fS_graph->Configure("Положение штока, мм",QPoint(0,25), 6);
     ui->view_pA->setChart(pA_graph->chart);
     ui->view_pB->setChart(pB_graph->chart);
     ui->view_fY->setChart(fY_graph->chart);
-    ui->view_fS->setChart(fS_graph->chart);
+    ui->view_sY->setChart(sY_graph->chart);
     ui->view_pA->setRenderHint( QPainter::Antialiasing);
     ui->view_pB->setRenderHint( QPainter::Antialiasing);
     ui->view_fY->setRenderHint( QPainter::Antialiasing);
-    ui->view_fS->setRenderHint( QPainter::Antialiasing);
+    ui->view_sY->setRenderHint( QPainter::Antialiasing);
 
     fT_graph  = new UniqueGraph( "Объемный расход", this);
     tfT_graph = new UniqueGraph( "Температура расхода", this);
@@ -77,10 +79,10 @@ GraphPlot::GraphPlot(QWidget *parent)
     SetGraphDiffForce();
 
 
-    connect( ui->tab_lef_cb_position_shtok, &QCheckBox::clicked, this, &GraphPlot::TabGraphShowingLeft );
-    connect( ui->tab_lef_cb_position_zolot, &QCheckBox::clicked, this, &GraphPlot::TabGraphShowingLeft );
-    connect( ui->tab_lef_cb_press_pist_rod, &QCheckBox::clicked, this, &GraphPlot::TabGraphShowingLeft );
-    connect( ui->tab_lef_cb_zadan_klapan,   &QCheckBox::clicked, this, &GraphPlot::TabGraphShowingLeft );
+    connect( ui->chb_pA, &QCheckBox::clicked, this, &GraphPlot::TabGraphShowingLeft );
+    connect( ui->chb_pB, &QCheckBox::clicked, this, &GraphPlot::TabGraphShowingLeft );
+    connect( ui->chb_fY, &QCheckBox::clicked, this, &GraphPlot::TabGraphShowingLeft );
+    connect( ui->chb_sY, &QCheckBox::clicked, this, &GraphPlot::TabGraphShowingLeft );
 
     connect( ui->tab_right_cb_position_shtok, &QCheckBox::clicked, this, &GraphPlot::TabGraphShowingRight );
     connect( ui->tab_right_cb_position_zolot, &QCheckBox::clicked, this, &GraphPlot::TabGraphShowingRight );
@@ -117,7 +119,7 @@ GraphPlot::GraphPlot(QWidget *parent)
     timer->stop();
     timer->setInterval(1000);
     connect( timer, &QTimer::timeout, this, &GraphPlot::handle_fT_tfT );
-    connect( timer, &QTimer::timeout, this, &GraphPlot::handle_pA_pB_fY_fS );
+    connect( timer, &QTimer::timeout, this, &GraphPlot::handle_pA_pB_fY_sY );
 
 //    connect( timer, &QTimer::timeout, this, &GraphPlot::handleForcePlot );
     connect( timer, &QTimer::timeout, this, &GraphPlot::handleRightTabPlot );
@@ -291,8 +293,7 @@ void GraphPlot::handle_fT_tfT()
     fT_graph->ChartScroll(  ui->view_fT->chart()->plotArea().width()  );
     tfT_graph->ChartScroll( ui->view_tfT->chart()->plotArea().width() );
 }
-
-void GraphPlot::handle_pA_pB_fY_fS()
+void GraphPlot::handle_pA_pB_fY_sY()
 {
     pA_graph->ChartIncrement( QRandomGenerator::global()->bounded(0,40),
                               QRandomGenerator::global()->bounded(0,40));
@@ -303,38 +304,42 @@ void GraphPlot::handle_pA_pB_fY_fS()
     fY_graph->ChartIncrement( QRandomGenerator::global()->bounded(-40,40),
                               QRandomGenerator::global()->bounded(-40,40));
 
-    fS_graph->ChartIncrement( QRandomGenerator::global()->bounded(0,15),
-                              QRandomGenerator::global()->bounded(0,15));
+    sY_graph->ChartIncrement( QRandomGenerator::global()->bounded(-40,40),
+                              QRandomGenerator::global()->bounded(-40,40));
+
+
+//    fS_graph->ChartIncrement( QRandomGenerator::global()->bounded(0,15),
+//                              QRandomGenerator::global()->bounded(0,15));
 
 
     pA_graph->ChartScroll(  ui->view_pA->chart()->plotArea().width()  );
     pB_graph->ChartScroll(  ui->view_pB->chart()->plotArea().width()  );
     fY_graph->ChartScroll(  ui->view_fY->chart()->plotArea().width()  );
-    fS_graph->ChartScroll(  ui->view_fS->chart()->plotArea().width()  );
+    sY_graph->ChartScroll(  ui->view_sY->chart()->plotArea().width()  );
 
 }
 
 void GraphPlot::TabGraphShowingLeft()
 {
-    if( ui->tab_lef_cb_position_shtok->isChecked() ){
-        ui->view_fS->show();
+    if( ui->chb_sY->isChecked() ){
+        ui->view_sY->show();
     }
     else{
-        ui->view_fS->hide();
+        ui->view_sY->hide();
     }
-    if( ui->tab_lef_cb_position_zolot->isChecked() ){
+    if( ui->chb_fY->isChecked() ){
         ui->view_fY->show();
     }
     else{
         ui->view_fY->hide();
     }
-    if( ui->tab_lef_cb_press_pist_rod->isChecked() ){
+    if( ui->chb_pA->isChecked() ){
         ui->view_pA->show();
     }
     else{
         ui->view_pA->hide();
     }
-    if( ui->tab_lef_cb_zadan_klapan->isChecked() ){
+    if( ui->chb_pB->isChecked() ){
         ui->view_pB->show();
     }
     else{

@@ -885,7 +885,7 @@
         <bool>true</bool>
        </property>
        <attribute name="title">
-        <string>Левый цилиндр</string>
+        <string>Диагностика цилиндров</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
@@ -921,7 +921,7 @@
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QChartView" name="view_fS">
+           <widget class="QChartView" name="view_sY">
             <property name="minimumSize">
              <size>
               <width>230</width>
@@ -935,13 +935,12 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
-           <widget class="QCheckBox" name="tab_lef_cb_press_pist_rod">
+           <widget class="QCheckBox" name="chb_pA">
             <property name="enabled">
              <bool>true</bool>
             </property>
             <property name="text">
-             <string>Давление в поршневой и штоковой
- полости</string>
+             <string>Давление в поршневой полости</string>
             </property>
             <property name="checked">
              <bool>true</bool>
@@ -949,12 +948,12 @@
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="tab_lef_cb_zadan_klapan">
+           <widget class="QCheckBox" name="chb_pB">
             <property name="enabled">
              <bool>true</bool>
             </property>
             <property name="text">
-             <string>Задание на проп. клапан</string>
+             <string>Давление в штоковой полости</string>
             </property>
             <property name="checked">
              <bool>true</bool>
@@ -962,7 +961,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="tab_lef_cb_position_zolot">
+           <widget class="QCheckBox" name="chb_fY">
             <property name="enabled">
              <bool>true</bool>
             </property>
@@ -976,12 +975,12 @@
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="tab_lef_cb_position_shtok">
+           <widget class="QCheckBox" name="chb_sY">
             <property name="enabled">
              <bool>true</bool>
             </property>
             <property name="text">
-             <string>Обратная связь положения штока</string>
+             <string>Задание на проп.клапан</string>
             </property>
             <property name="checked">
              <bool>true</bool>

@@ -33,6 +33,8 @@ class GraphPlot : public QMainWindow
 public:
     GraphPlot(QWidget *parent = nullptr);
     ~GraphPlot();
+
+    UniqueGraph * sY_graph;
     UniqueGraph * fY_graph;
     UniqueGraph * fS_graph;
 
@@ -42,7 +44,7 @@ public:
 
     UniqueGraph * pA_graph;
     UniqueGraph * pB_graph;
-    void handle_pA_pB_fY_fS();
+    void handle_pA_pB_fY_sY();
 
     void handleRightTabPlot();
     void handleCalcTabPlot();
