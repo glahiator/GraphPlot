@@ -887,107 +887,140 @@
        <attribute name="title">
         <string>Диагностика цилиндров</string>
        </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_3">
-        <item>
-         <layout class="QGridLayout" name="gridLayout_4">
-          <item row="0" column="0">
-           <widget class="QChartView" name="view_pA">
-            <property name="minimumSize">
-             <size>
-              <width>230</width>
-              <height>230</height>
-             </size>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QChartView" name="view_pB">
-            <property name="minimumSize">
-             <size>
-              <width>230</width>
-              <height>230</height>
-             </size>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QChartView" name="view_fY">
-            <property name="minimumSize">
-             <size>
-              <width>230</width>
-              <height>230</height>
-             </size>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QChartView" name="view_sY">
-            <property name="minimumSize">
-             <size>
-              <width>230</width>
-              <height>230</height>
-             </size>
-            </property>
-           </widget>
-          </item>
-         </layout>
+       <layout class="QGridLayout" name="gridLayout_4">
+        <item row="0" column="0">
+         <widget class="QChartView" name="view_pA">
+          <property name="minimumSize">
+           <size>
+            <width>230</width>
+            <height>230</height>
+           </size>
+          </property>
+         </widget>
         </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_2">
-          <item>
-           <widget class="QCheckBox" name="chb_pA">
-            <property name="enabled">
-             <bool>true</bool>
-            </property>
-            <property name="text">
-             <string>Давление в поршневой полости</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="chb_pB">
-            <property name="enabled">
-             <bool>true</bool>
-            </property>
-            <property name="text">
-             <string>Давление в штоковой полости</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="chb_fY">
-            <property name="enabled">
-             <bool>true</bool>
-            </property>
-            <property name="text">
-             <string>Обратная связь положения золотника
+        <item row="0" column="1">
+         <widget class="QChartView" name="view_pB">
+          <property name="minimumSize">
+           <size>
+            <width>230</width>
+            <height>230</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QChartView" name="view_fY">
+          <property name="minimumSize">
+           <size>
+            <width>230</width>
+            <height>230</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QChartView" name="view_sY">
+          <property name="minimumSize">
+           <size>
+            <width>230</width>
+            <height>230</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QChartView" name="view_fS">
+          <property name="minimumSize">
+           <size>
+            <width>230</width>
+            <height>230</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QGroupBox" name="groupBox">
+          <property name="title">
+           <string>Настройки</string>
+          </property>
+          <widget class="QCheckBox" name="chb_pA">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>40</y>
+             <width>256</width>
+             <height>26</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Давление в поршневой полости</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+          <widget class="QCheckBox" name="chb_pB">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>90</y>
+             <width>243</width>
+             <height>26</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Давление в штоковой полости</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+          <widget class="QCheckBox" name="chb_fY">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>120</y>
+             <width>299</width>
+             <height>46</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Обратная связь положения золотника
  проп. клапана</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="chb_sY">
-            <property name="enabled">
-             <bool>true</bool>
-            </property>
-            <property name="text">
-             <string>Задание на проп.клапан</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-         </layout>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+          <widget class="QCheckBox" name="chb_sY">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="geometry">
+            <rect>
+             <x>30</x>
+             <y>170</y>
+             <width>200</width>
+             <height>26</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Задание на проп.клапан</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </widget>
         </item>
        </layout>
       </widget>

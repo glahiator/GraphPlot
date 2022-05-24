@@ -31,13 +31,14 @@ GraphPlot::GraphPlot(QWidget *parent)
 
     pA_graph->Configure("Давление, бар", QPoint(0,250), 6);
     pB_graph->Configure("Давление, бар", QPoint(0,250), 6);
-    fY_graph->Configure("Положение золотника, %", QPoint(-100,100), 9);
+    fY_graph->Configure("Положение, %", QPoint(-100,100), 6);
     sY_graph->Configure("Задание, %", QPoint(-100,100), 9);
-    fS_graph->Configure("Положение штока, мм",QPoint(0,25), 6);
+    fS_graph->Configure("Положение, мм",QPoint(0,25), 6);
     ui->view_pA->setChart(pA_graph->chart);
     ui->view_pB->setChart(pB_graph->chart);
     ui->view_fY->setChart(fY_graph->chart);
     ui->view_sY->setChart(sY_graph->chart);
+    ui->view_fS->setChart(fS_graph->chart);
     ui->view_pA->setRenderHint( QPainter::Antialiasing);
     ui->view_pB->setRenderHint( QPainter::Antialiasing);
     ui->view_fY->setRenderHint( QPainter::Antialiasing);
@@ -308,14 +309,15 @@ void GraphPlot::handle_pA_pB_fY_sY()
                               QRandomGenerator::global()->bounded(-40,40));
 
 
-//    fS_graph->ChartIncrement( QRandomGenerator::global()->bounded(0,15),
-//                              QRandomGenerator::global()->bounded(0,15));
+    fS_graph->ChartIncrement( QRandomGenerator::global()->bounded(0,15),
+                              QRandomGenerator::global()->bounded(0,15));
 
 
     pA_graph->ChartScroll(  ui->view_pA->chart()->plotArea().width()  );
     pB_graph->ChartScroll(  ui->view_pB->chart()->plotArea().width()  );
     fY_graph->ChartScroll(  ui->view_fY->chart()->plotArea().width()  );
     sY_graph->ChartScroll(  ui->view_sY->chart()->plotArea().width()  );
+    fS_graph->ChartScroll(  ui->view_fS->chart()->plotArea().width()  );
 
 }
 
