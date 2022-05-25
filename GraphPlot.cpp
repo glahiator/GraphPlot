@@ -42,6 +42,7 @@ GraphPlot::GraphPlot(QWidget *parent)
     ui->view_pA->setRenderHint( QPainter::Antialiasing);
     ui->view_pB->setRenderHint( QPainter::Antialiasing);
     ui->view_fY->setRenderHint( QPainter::Antialiasing);
+    ui->view_fS->setRenderHint( QPainter::Antialiasing);
     ui->view_sY->setRenderHint( QPainter::Antialiasing);
 
     fT_graph  = new UniqueGraph( "Объемный расход", this);
@@ -79,11 +80,13 @@ GraphPlot::GraphPlot(QWidget *parent)
     SetGraphStockLoss();
     SetGraphDiffForce();
 
+    connect( ui->sb_pA_diap_max, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::GraphDiapSet );
 
     connect( ui->chb_pA, &QCheckBox::clicked, this, &GraphPlot::TabGraphShowingLeft );
     connect( ui->chb_pB, &QCheckBox::clicked, this, &GraphPlot::TabGraphShowingLeft );
     connect( ui->chb_fY, &QCheckBox::clicked, this, &GraphPlot::TabGraphShowingLeft );
     connect( ui->chb_sY, &QCheckBox::clicked, this, &GraphPlot::TabGraphShowingLeft );
+    connect( ui->chb_fS, &QCheckBox::clicked, this, &GraphPlot::TabGraphShowingLeft );
 
     connect( ui->tab_right_cb_position_shtok, &QCheckBox::clicked, this, &GraphPlot::TabGraphShowingRight );
     connect( ui->tab_right_cb_position_zolot, &QCheckBox::clicked, this, &GraphPlot::TabGraphShowingRight );
@@ -347,6 +350,20 @@ void GraphPlot::TabGraphShowingLeft()
     else{
         ui->view_pB->hide();
     }
+    if( ui->chb_fS->isChecked() ){
+        ui->view_fS->show();
+    }
+    else {
+        ui->view_fS->hide();
+    }
+}
+
+void GraphPlot::GraphDiapSet()
+{
+
+
+    pA_graph->SetRange( QPoint(ui->sb_pA_diap_min->value(), ui->sb_pA_diap_max->value() ));
+
 }
 
 void GraphPlot::SetGraphPressureRight()

@@ -57,6 +57,11 @@ void UniqueGraph::Configure(QString _yAxisText , QPoint _yRange, int _yTickCount
     chart->setTitle(title);
 }
 
+void UniqueGraph::SetRange(QPoint _yRange)
+{
+    axis_Y->setRange(_yRange.x(), _yRange.y());
+}
+
 void UniqueGraph::ChartIncrement_if(bool _isLeft, qreal _leftVal, bool _isRight, qreal _rightVal )
 {
     if( _isLeft )  series_left->append(  time.toMSecsSinceEpoch(),  _leftVal);

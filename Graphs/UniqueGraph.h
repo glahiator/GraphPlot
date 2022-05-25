@@ -16,6 +16,7 @@ class UniqueGraph : public QObject
 public:
     explicit UniqueGraph( QString _title, QObject *parent = nullptr);
     void Configure( QString _yAxisText, QPoint _yRange, int _yTickCount);
+    void SetRange(QPoint _yRange);
     void ChartIncrement_if(bool _isLeft, qreal _leftVal, bool _isRight, qreal _rightValt);
     void ChartIncrement(qreal _leftVal, qreal _rightVal);
     void ChartScroll(qreal plotWidth);

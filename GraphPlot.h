@@ -51,6 +51,7 @@ public:
 
     // left tab graphs
     void TabGraphShowingLeft();
+    void GraphDiapSet();
     // right tab graphs
     void SetGraphPressureRight();
     void SetGraphZadanRight();
