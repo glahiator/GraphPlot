@@ -29,21 +29,8 @@ GraphPlot::GraphPlot(QWidget *parent)
     fY_graph = new UniqueGraph( "Обратная связь положения золотника проп. клапана", this);
     fS_graph = new UniqueGraph( "Обратная связь положения штока", this);
 
-    pA_graph->Configure("Давление, бар", QPoint(0,250), 6);
-    pB_graph->Configure("Давление, бар", QPoint(0,250), 6);
-    fY_graph->Configure("Положение, %", QPoint(-100,100), 6);
-    sY_graph->Configure("Задание, %", QPoint(-100,100), 9);
-    fS_graph->Configure("Положение, мм",QPoint(0,25), 6);
-    ui->view_pA->setChart(pA_graph->chart);
-    ui->view_pB->setChart(pB_graph->chart);
-    ui->view_fY->setChart(fY_graph->chart);
-    ui->view_sY->setChart(sY_graph->chart);
-    ui->view_fS->setChart(fS_graph->chart);
-    ui->view_pA->setRenderHint( QPainter::Antialiasing);
-    ui->view_pB->setRenderHint( QPainter::Antialiasing);
-    ui->view_fY->setRenderHint( QPainter::Antialiasing);
-    ui->view_fS->setRenderHint( QPainter::Antialiasing);
-    ui->view_sY->setRenderHint( QPainter::Antialiasing);
+    connect( ui->btn_cylinder_start, &QPushButton::clicked, this, &GraphPlot::StartCylinderGraphs );
+    connect( ui->btn_cylinder_stop, &QPushButton::clicked, this, &GraphPlot::StopCylinderGraphs );
 
     fT_graph  = new UniqueGraph( "Объемный расход", this);
     tfT_graph = new UniqueGraph( "Температура расхода", this);
@@ -142,7 +129,7 @@ GraphPlot::GraphPlot(QWidget *parent)
     timer->stop();
     timer->setInterval(1000);
     connect( timer, &QTimer::timeout, this, &GraphPlot::handle_fT_tfT );
-    connect( timer, &QTimer::timeout, this, &GraphPlot::handle_pA_pB_fY_sY );
+
 
 //    connect( timer, &QTimer::timeout, this, &GraphPlot::handleForcePlot );
     connect( timer, &QTimer::timeout, this, &GraphPlot::handleRightTabPlot );
@@ -426,6 +413,32 @@ void GraphPlot::GraphStickCountSet()
     else if( name.contains("_fS_") ) {
         fS_graph->SetTickCount( sb->value() );
     }
+}
+
+void GraphPlot::StartCylinderGraphs()
+{
+    pA_graph->Configure("Давление, бар", QPoint( ui->sb_pA_diap_min->value(),ui->sb_pA_diap_max->value()),    ui->sb_pA_discret->value());
+    pB_graph->Configure("Давление, бар", QPoint( ui->sb_pB_diap_min->value(),ui->sb_pB_diap_max->value()),    ui->sb_pB_discret->value());
+    fY_graph->Configure("Положение, %",  QPoint( ui->sb_fY_diap_min->value(),ui->sb_fY_diap_max->value()),    ui->sb_fY_discret->value());
+    sY_graph->Configure("Задание, %",    QPoint( ui->sb_sY_diap_min->value(),ui->sb_sY_diap_max->value()),    ui->sb_sY_discret->value());
+    fS_graph->Configure("Положение, мм", QPoint( ui->sb_fS_diap_min->value(),ui->sb_fS_diap_max->value()),    ui->sb_fS_discret->value());
+    ui->view_pA->setChart(pA_graph->chart);
+    ui->view_pB->setChart(pB_graph->chart);
+    ui->view_fY->setChart(fY_graph->chart);
+    ui->view_sY->setChart(sY_graph->chart);
+    ui->view_fS->setChart(fS_graph->chart);
+    ui->view_pA->setRenderHint( QPainter::Antialiasing);
+    ui->view_pB->setRenderHint( QPainter::Antialiasing);
+    ui->view_fY->setRenderHint( QPainter::Antialiasing);
+    ui->view_fS->setRenderHint( QPainter::Antialiasing);
+    ui->view_sY->setRenderHint( QPainter::Antialiasing);
+
+    connect( timer, &QTimer::timeout, this, &GraphPlot::handle_pA_pB_fY_sY );
+}
+
+void GraphPlot::StopCylinderGraphs()
+{
+    disconnect( timer, &QTimer::timeout, this, &GraphPlot::handle_pA_pB_fY_sY );
 }
 
 void GraphPlot::SetGraphPressureRight()

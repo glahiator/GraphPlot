@@ -53,6 +53,8 @@ public:
     void TabGraphShowingLeft();
     void GraphDiapSet();
     void GraphStickCountSet();
+    void StartCylinderGraphs();
+    void StopCylinderGraphs();
     // right tab graphs
     void SetGraphPressureRight();
     void SetGraphZadanRight();
