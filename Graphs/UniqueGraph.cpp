@@ -49,17 +49,24 @@ void UniqueGraph::Configure(QString _yAxisText , QPoint _yRange, int _yTickCount
 
     axis_X->setRange(temp_time, time.addSecs(1));
 //    axis_Y->setRange(0, 100);
-    axis_Y->setRange(_yRange.x(), _yRange.y());
+//    axis_Y->setRange(_yRange.x(), _yRange.y());
+    SetRange( _yRange );
 
     axis_X->setTickCount(10);
 //    axis_Y->setTickCount(11);
-    axis_Y->setTickCount(_yTickCount);
+//    axis_Y->setTickCount(_yTickCount);
+    SetTickCount(_yTickCount);
     chart->setTitle(title);
 }
 
 void UniqueGraph::SetRange(QPoint _yRange)
 {
     axis_Y->setRange(_yRange.x(), _yRange.y());
+}
+
+void UniqueGraph::SetTickCount(int _yTick)
+{
+    axis_Y->setTickCount(_yTick);
 }
 
 void UniqueGraph::ChartIncrement_if(bool _isLeft, qreal _leftVal, bool _isRight, qreal _rightVal )

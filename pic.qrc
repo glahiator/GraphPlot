@@ -3,5 +3,9 @@
         <file>img/check.png</file>
         <file>img/rb_blue.png</file>
         <file>img/rb_green.png</file>
+        <file>img/setting.png</file>
+        <file>img/start.png</file>
+        <file>img/stop.png</file>
+        <file>img/sync.png</file>
     </qresource>
 </RCC>

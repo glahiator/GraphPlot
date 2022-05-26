@@ -81,6 +81,25 @@ GraphPlot::GraphPlot(QWidget *parent)
     SetGraphDiffForce();
 
     connect( ui->sb_pA_diap_max, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::GraphDiapSet );
+    connect( ui->sb_pA_diap_min, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::GraphDiapSet );
+    connect( ui->sb_pB_diap_max, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::GraphDiapSet );
+    connect( ui->sb_pB_diap_min, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::GraphDiapSet );
+    connect( ui->sb_sY_diap_max, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::GraphDiapSet );
+    connect( ui->sb_sY_diap_min, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::GraphDiapSet );
+    connect( ui->sb_fY_diap_max, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::GraphDiapSet );
+    connect( ui->sb_fY_diap_min, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::GraphDiapSet );
+    connect( ui->sb_fS_diap_max, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::GraphDiapSet );
+    connect( ui->sb_fS_diap_min, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::GraphDiapSet );
+
+    connect( ui->sb_pA_discret, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::GraphStickCountSet );
+    connect( ui->sb_pB_discret, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::GraphStickCountSet );
+    connect( ui->sb_sY_discret, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::GraphStickCountSet );
+    connect( ui->sb_fY_discret, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::GraphStickCountSet );
+    connect( ui->sb_fS_discret, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::GraphStickCountSet );
+
+
+
+
 
     connect( ui->chb_pA, &QCheckBox::clicked, this, &GraphPlot::TabGraphShowingLeft );
     connect( ui->chb_pB, &QCheckBox::clicked, this, &GraphPlot::TabGraphShowingLeft );
@@ -299,6 +318,7 @@ void GraphPlot::handle_fT_tfT()
 }
 void GraphPlot::handle_pA_pB_fY_sY()
 {
+    ui->sb_pA_val->setValue( QRandomGenerator::global()->bounded(0,40) );
     pA_graph->ChartIncrement( QRandomGenerator::global()->bounded(0,40),
                               QRandomGenerator::global()->bounded(0,40));
 
@@ -360,10 +380,52 @@ void GraphPlot::TabGraphShowingLeft()
 
 void GraphPlot::GraphDiapSet()
 {
+    QSpinBox* sb = qobject_cast<QSpinBox*>(sender());
+    if( nullptr == sb ) {
+        return;
+    }
 
+    QString name = sb->objectName();
+    if( name.contains("_pA_") ) {
+        pA_graph->SetRange( QPoint(ui->sb_pA_diap_min->value(), ui->sb_pA_diap_max->value() ));
+    }
+    else if( name.contains("_pB_") ) {
+        pB_graph->SetRange( QPoint(ui->sb_pB_diap_min->value(), ui->sb_pB_diap_max->value() ));
+    }
+    else if( name.contains("_sY_") ) {
+        sY_graph->SetRange( QPoint(ui->sb_sY_diap_min->value(), ui->sb_sY_diap_max->value() ));
+    }
+    else if( name.contains("_fY_") ) {
+        fY_graph->SetRange( QPoint(ui->sb_fY_diap_min->value(), ui->sb_fY_diap_max->value() ));
+    }
+    else if( name.contains("_fS_") ) {
+        fS_graph->SetRange( QPoint(ui->sb_fS_diap_min->value(), ui->sb_fS_diap_max->value() ));
+    }
+}
 
-    pA_graph->SetRange( QPoint(ui->sb_pA_diap_min->value(), ui->sb_pA_diap_max->value() ));
+void GraphPlot::GraphStickCountSet()
+{
+    QSpinBox* sb = qobject_cast<QSpinBox*>(sender());
+    if( nullptr == sb ) {
+        return;
+    }
 
+    QString name = sb->objectName();
+    if( name.contains("_pA_") ) {
+        pA_graph->SetTickCount( sb->value() );
+    }
+    else if( name.contains("_pB_") ) {
+        pB_graph->SetTickCount( sb->value() );
+    }
+    else if( name.contains("_sY_") ) {
+        sY_graph->SetTickCount( sb->value() );
+    }
+    else if( name.contains("_fY_") ) {
+        fY_graph->SetTickCount( sb->value() );
+    }
+    else if( name.contains("_fS_") ) {
+        fS_graph->SetTickCount( sb->value() );
+    }
 }
 
 void GraphPlot::SetGraphPressureRight()
@@ -814,6 +876,37 @@ void GraphPlot::LoadConfigure()
     ui->cb_adc1_tfT_R->setCurrentIndex( jsonParse.value( "adc1index" ).toInt() );
     ui->cb_adc3_tfT_R->setCurrentIndex( jsonParse.value( "adc3index" ).toInt() );
     ui->chb_filt_tfT_R->setChecked(jsonParse.value( "isFilter"  ).toBool() );
+
+    jsonParse = src.object().value( "pA_graph" ).toObject();
+   ui->chb_pA->setChecked(       jsonParse.value( "isChecked" ).toBool() );
+    ui->sb_pA_diap_min->setValue( jsonParse.value( "y_diap_min" ).toInt() );
+    ui->sb_pA_diap_max->setValue( jsonParse.value( "y_diap_max" ).toInt() );
+    ui->sb_pA_discret->setValue(  jsonParse.value( "y_tick" ).toInt() );
+
+    jsonParse = src.object().value( "pB_graph" ).toObject();
+   ui->chb_pB->setChecked(       jsonParse.value( "isChecked" ).toBool() );
+    ui->sb_pB_diap_min->setValue( jsonParse.value( "y_diap_min" ).toInt() );
+    ui->sb_pB_diap_max->setValue( jsonParse.value( "y_diap_max" ).toInt() );
+    ui->sb_pB_discret->setValue(  jsonParse.value( "y_tick" ).toInt() );
+
+    jsonParse = src.object().value( "sY_graph" ).toObject();
+   ui->chb_sY->setChecked(       jsonParse.value( "isChecked" ).toBool() );
+    ui->sb_sY_diap_min->setValue( jsonParse.value( "y_diap_min" ).toInt() );
+    ui->sb_sY_diap_max->setValue( jsonParse.value( "y_diap_max" ).toInt() );
+    ui->sb_sY_discret->setValue(  jsonParse.value( "y_tick" ).toInt() );
+
+    jsonParse = src.object().value( "fS_graph" ).toObject();
+   ui->chb_fS->setChecked(       jsonParse.value( "isChecked" ).toBool() );
+    ui->sb_fS_diap_min->setValue( jsonParse.value( "y_diap_min" ).toInt() );
+    ui->sb_fS_diap_max->setValue( jsonParse.value( "y_diap_max" ).toInt() );
+    ui->sb_fS_discret->setValue(  jsonParse.value( "y_tick" ).toInt() );
+
+    jsonParse = src.object().value( "fY_graph" ).toObject();
+   ui->chb_fY->setChecked(       jsonParse.value( "isChecked" ).toBool() );
+    ui->sb_fY_diap_min->setValue( jsonParse.value( "y_diap_min" ).toInt() );
+    ui->sb_fY_diap_max->setValue( jsonParse.value( "y_diap_max" ).toInt() );
+    ui->sb_fY_discret->setValue(  jsonParse.value( "y_tick" ).toInt() );
+
 }
 void GraphPlot::SaveConfigure()
 {
@@ -849,11 +942,47 @@ void GraphPlot::SaveConfigure()
     tfT_R_conf.insert( "adc3index", ui->cb_adc3_tfT_R->currentIndex() );
     tfT_R_conf.insert( "isChecked", ui->gb_tfT_R->isChecked());
 
+    QJsonObject pA_graph_conf = QJsonObject();
+    pA_graph_conf.insert( "isChecked",  ui->chb_pA->isChecked() );
+    pA_graph_conf.insert( "y_diap_min", ui->sb_pA_diap_min->value() );
+    pA_graph_conf.insert( "y_diap_max", ui->sb_pA_diap_max->value()  );
+    pA_graph_conf.insert( "y_tick",     ui->sb_pA_discret->value()  );
+
+    QJsonObject pB_graph_conf = QJsonObject();
+    pB_graph_conf.insert( "isChecked", ui->chb_pB->isChecked() );
+    pB_graph_conf.insert( "y_diap_min", ui->sb_pB_diap_min->value() );
+    pB_graph_conf.insert( "y_diap_max", ui->sb_pB_diap_max->value()  );
+    pB_graph_conf.insert( "y_tick",     ui->sb_pB_discret->value()  );
+
+    QJsonObject sY_graph_conf = QJsonObject();
+    sY_graph_conf.insert( "isChecked", ui->chb_sY->isChecked() );
+    sY_graph_conf.insert( "y_diap_min", ui->sb_sY_diap_min->value() );
+    sY_graph_conf.insert( "y_diap_max", ui->sb_sY_diap_max->value()  );
+    sY_graph_conf.insert( "y_tick",     ui->sb_sY_discret->value()  );
+
+    QJsonObject fY_graph_conf = QJsonObject();
+    fY_graph_conf.insert( "isChecked", ui->chb_fY->isChecked() );
+    fY_graph_conf.insert( "y_diap_min", ui->sb_fY_diap_min->value() );
+    fY_graph_conf.insert( "y_diap_max", ui->sb_fY_diap_max->value()  );
+    fY_graph_conf.insert( "y_tick",     ui->sb_fY_discret->value()  );
+
+    QJsonObject fS_graph_conf = QJsonObject();
+    fS_graph_conf.insert( "isChecked", ui->chb_fS->isChecked() );
+    fS_graph_conf.insert( "y_diap_min", ui->sb_fS_diap_min->value() );
+    fS_graph_conf.insert( "y_diap_max", ui->sb_fS_diap_max->value()  );
+    fS_graph_conf.insert( "y_tick",     ui->sb_fS_discret->value()  );
+
+
     QJsonObject mini_root = QJsonObject();
-    mini_root.insert( "gb_fT_L",  fT_L_conf);
-    mini_root.insert( "gb_fT_R",  fT_R_conf);
+    mini_root.insert( "gb_fT_L",   fT_L_conf);
+    mini_root.insert( "gb_fT_R",   fT_R_conf);
     mini_root.insert( "gb_tfT_L",  tfT_L_conf);
     mini_root.insert( "gb_tfT_R",  tfT_R_conf);
+    mini_root.insert( "pA_graph",  pA_graph_conf);
+    mini_root.insert( "pB_graph",  pB_graph_conf);
+    mini_root.insert( "sY_graph",  sY_graph_conf);
+    mini_root.insert( "fY_graph",  fY_graph_conf);
+    mini_root.insert( "fS_graph",  fS_graph_conf);
 
 
     QJsonDocument doc = QJsonDocument();
