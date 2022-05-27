@@ -24,7 +24,7 @@
     <item row="0" column="1">
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="tab_3">
        <attribute name="title">
@@ -56,9 +56,15 @@
          </layout>
         </item>
         <item>
-         <layout class="QVBoxLayout" name="verticalLayout">
+         <layout class="QVBoxLayout" name="verticalLayout_8">
           <item>
            <widget class="QGroupBox" name="gb_fT_L">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="styleSheet">
              <string notr="true"/>
             </property>
@@ -77,6 +83,9 @@
             <layout class="QGridLayout" name="gridLayout_3">
              <item row="0" column="0">
               <widget class="QRadioButton" name="rb_adc1_fT_L">
+               <property name="toolTip">
+                <string>Выбор АЦП</string>
+               </property>
                <property name="text">
                 <string>ADC 1</string>
                </property>
@@ -152,6 +161,9 @@
              </item>
              <item row="1" column="0">
               <widget class="QRadioButton" name="rb_adc3_fT_L">
+               <property name="toolTip">
+                <string>Выбор АЦП</string>
+               </property>
                <property name="text">
                 <string>ADC 3</string>
                </property>
@@ -159,6 +171,12 @@
              </item>
              <item row="1" column="1">
               <widget class="QComboBox" name="cb_adc3_fT_L">
+               <property name="toolTip">
+                <string> Номер канала</string>
+               </property>
+               <property name="maxCount">
+                <number>10</number>
+               </property>
                <item>
                 <property name="text">
                  <string>0</string>
@@ -203,6 +221,12 @@
              </item>
              <item row="0" column="1">
               <widget class="QComboBox" name="cb_adc1_fT_L">
+               <property name="toolTip">
+                <string> Номер канала</string>
+               </property>
+               <property name="maxCount">
+                <number>10</number>
+               </property>
                <item>
                 <property name="text">
                  <string>0</string>
@@ -252,6 +276,9 @@
              </item>
              <item row="2" column="0">
               <widget class="QCheckBox" name="chb_filt_fT_L">
+               <property name="toolTip">
+                <string>Фитровать сигнал</string>
+               </property>
                <property name="text">
                 <string>Фильтр</string>
                </property>
@@ -262,6 +289,12 @@
           </item>
           <item>
            <widget class="QGroupBox" name="gb_fT_R">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="title">
              <string>Правый цилиндр</string>
             </property>
@@ -275,123 +308,6 @@
              <bool>true</bool>
             </property>
             <layout class="QGridLayout" name="gridLayout_6">
-             <item row="0" column="0">
-              <widget class="QRadioButton" name="rb_adc1_fT_R">
-               <property name="text">
-                <string>ADC 1</string>
-               </property>
-               <property name="checked">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="1">
-              <widget class="QComboBox" name="cb_adc1_fT_R">
-               <item>
-                <property name="text">
-                 <string>0</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>1</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>2</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>3</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>4</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>5</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>6</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>7</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>8</string>
-                </property>
-               </item>
-              </widget>
-             </item>
-             <item row="1" column="0">
-              <widget class="QRadioButton" name="rb_adc3_fT_R">
-               <property name="text">
-                <string>ADC 3</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="1">
-              <widget class="QComboBox" name="cb_adc3_fT_R">
-               <item>
-                <property name="text">
-                 <string>0</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>1</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>2</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>3</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>4</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>5</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>6</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>7</string>
-                </property>
-               </item>
-              </widget>
-             </item>
-             <item row="2" column="0">
-              <widget class="QCheckBox" name="chb_filt_fT_R">
-               <property name="text">
-                <string>Фильтр</string>
-               </property>
-              </widget>
-             </item>
              <item row="2" column="1">
               <widget class="QComboBox" name="cb_box_size_6">
                <property name="enabled">
@@ -457,6 +373,144 @@
                </item>
               </widget>
              </item>
+             <item row="0" column="0">
+              <widget class="QRadioButton" name="rb_adc1_fT_R">
+               <property name="toolTip">
+                <string>Выбор АЦП</string>
+               </property>
+               <property name="text">
+                <string>ADC 1</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QComboBox" name="cb_adc3_fT_R">
+               <property name="toolTip">
+                <string> Номер канала</string>
+               </property>
+               <property name="maxCount">
+                <number>10</number>
+               </property>
+               <item>
+                <property name="text">
+                 <string>0</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>1</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>2</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>3</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>4</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>5</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>6</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>7</string>
+                </property>
+               </item>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QRadioButton" name="rb_adc3_fT_R">
+               <property name="toolTip">
+                <string>Выбор АЦП</string>
+               </property>
+               <property name="text">
+                <string>ADC 3</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="0">
+              <widget class="QCheckBox" name="chb_filt_fT_R">
+               <property name="toolTip">
+                <string>Фитровать сигнал</string>
+               </property>
+               <property name="text">
+                <string>Фильтр</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QComboBox" name="cb_adc1_fT_R">
+               <property name="toolTip">
+                <string> Номер канала</string>
+               </property>
+               <property name="maxCount">
+                <number>10</number>
+               </property>
+               <item>
+                <property name="text">
+                 <string>0</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>1</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>2</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>3</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>4</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>5</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>6</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>7</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>8</string>
+                </property>
+               </item>
+              </widget>
+             </item>
             </layout>
            </widget>
           </item>
@@ -465,8 +519,136 @@
             <property name="orientation">
              <enum>Qt::Vertical</enum>
             </property>
-            <property name="sizeType">
-             <enum>QSizePolicy::Preferred</enum>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>158</width>
+              <height>36</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QGroupBox" name="gb_tfT_R_2">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="title">
+             <string>Настройки</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+            <property name="flat">
+             <bool>false</bool>
+            </property>
+            <property name="checkable">
+             <bool>false</bool>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout">
+             <item>
+              <widget class="QPushButton" name="btn_cylinder_start_2">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="layoutDirection">
+                <enum>Qt::LeftToRight</enum>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">text-align:left;</string>
+               </property>
+               <property name="text">
+                <string>Начать</string>
+               </property>
+               <property name="icon">
+                <iconset resource="pic.qrc">
+                 <normaloff>:/icons/img/start.png</normaloff>:/icons/img/start.png</iconset>
+               </property>
+               <property name="iconSize">
+                <size>
+                 <width>20</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="btn_cylinder_stop_2">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="layoutDirection">
+                <enum>Qt::LeftToRight</enum>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">text-align:left;</string>
+               </property>
+               <property name="text">
+                <string>Прервать</string>
+               </property>
+               <property name="icon">
+                <iconset resource="pic.qrc">
+                 <normaloff>:/icons/img/stop.png</normaloff>:/icons/img/stop.png</iconset>
+               </property>
+               <property name="iconSize">
+                <size>
+                 <width>20</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="btn_cylinder_save_2">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="layoutDirection">
+                <enum>Qt::LeftToRight</enum>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">text-align:left;</string>
+               </property>
+               <property name="text">
+                <string>Сохранить</string>
+               </property>
+               <property name="icon">
+                <iconset resource="pic.qrc">
+                 <normaloff>:/icons/img/setting.png</normaloff>:/icons/img/setting.png</iconset>
+               </property>
+               <property name="iconSize">
+                <size>
+                 <width>20</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="chb_demo_cylinders_2">
+               <property name="text">
+                <string>Демо</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <spacer name="verticalSpacer_3">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
@@ -478,6 +660,12 @@
           </item>
           <item>
            <widget class="QGroupBox" name="gb_tfT_L">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="title">
              <string>Левый цилиндр</string>
             </property>
@@ -493,6 +681,9 @@
             <layout class="QGridLayout" name="gridLayout_5">
              <item row="0" column="0">
               <widget class="QRadioButton" name="rb_adc1_tfT_L">
+               <property name="toolTip">
+                <string>Выбор АЦП</string>
+               </property>
                <property name="text">
                 <string>ADC 1</string>
                </property>
@@ -503,6 +694,12 @@
              </item>
              <item row="0" column="1">
               <widget class="QComboBox" name="cb_adc1_tfT_L">
+               <property name="toolTip">
+                <string> Номер канала</string>
+               </property>
+               <property name="maxCount">
+                <number>10</number>
+               </property>
                <item>
                 <property name="text">
                  <string>0</string>
@@ -552,6 +749,9 @@
              </item>
              <item row="1" column="0">
               <widget class="QRadioButton" name="rb_adc3_tfT_L">
+               <property name="toolTip">
+                <string>Выбор АЦП</string>
+               </property>
                <property name="text">
                 <string>ADC 3</string>
                </property>
@@ -559,6 +759,12 @@
              </item>
              <item row="1" column="1">
               <widget class="QComboBox" name="cb_adc3_tfT_L">
+               <property name="toolTip">
+                <string> Номер канала</string>
+               </property>
+               <property name="maxCount">
+                <number>10</number>
+               </property>
                <item>
                 <property name="text">
                  <string>0</string>
@@ -603,6 +809,9 @@
              </item>
              <item row="2" column="0">
               <widget class="QCheckBox" name="chb_filt_tfT_L">
+               <property name="toolTip">
+                <string>Фитровать сигнал</string>
+               </property>
                <property name="text">
                 <string>Фильтр</string>
                </property>
@@ -678,6 +887,12 @@
           </item>
           <item>
            <widget class="QGroupBox" name="gb_tfT_R">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="title">
              <string>Правый цилиндр</string>
             </property>
@@ -693,6 +908,9 @@
             <layout class="QGridLayout" name="gridLayout_2">
              <item row="0" column="0">
               <widget class="QRadioButton" name="rb_adc1_tfT_R">
+               <property name="toolTip">
+                <string>Выбор АЦП</string>
+               </property>
                <property name="text">
                 <string>ADC 1</string>
                </property>
@@ -703,6 +921,12 @@
              </item>
              <item row="0" column="1">
               <widget class="QComboBox" name="cb_adc1_tfT_R">
+               <property name="toolTip">
+                <string> Номер канала</string>
+               </property>
+               <property name="maxCount">
+                <number>10</number>
+               </property>
                <item>
                 <property name="text">
                  <string>0</string>
@@ -752,6 +976,9 @@
              </item>
              <item row="1" column="0">
               <widget class="QRadioButton" name="rb_adc3_tfT_R">
+               <property name="toolTip">
+                <string>Выбор АЦП</string>
+               </property>
                <property name="text">
                 <string>ADC 3</string>
                </property>
@@ -759,6 +986,12 @@
              </item>
              <item row="1" column="1">
               <widget class="QComboBox" name="cb_adc3_tfT_R">
+               <property name="toolTip">
+                <string> Номер канала</string>
+               </property>
+               <property name="maxCount">
+                <number>10</number>
+               </property>
                <item>
                 <property name="text">
                  <string>0</string>
@@ -803,6 +1036,9 @@
              </item>
              <item row="2" column="0">
               <widget class="QCheckBox" name="chb_filt_tfT_R">
+               <property name="toolTip">
+                <string>Фитровать сигнал</string>
+               </property>
                <property name="text">
                 <string>Фильтр</string>
                </property>

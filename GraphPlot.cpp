@@ -395,16 +395,16 @@ void GraphPlot::handle_fT_tfT()
 void GraphPlot::handle_pA_pB_fY_sY()
 {
     if( isDemo_pA_pB_fY_sY && !is_new_cylinder ) {
-        cylinders.left.pA = QRandomGenerator::global()->bounded(0,40);
-       cylinders.right.pA = QRandomGenerator::global()->bounded(0,40);
-        cylinders.left.pB = QRandomGenerator::global()->bounded(0,40);
-       cylinders.right.pB = QRandomGenerator::global()->bounded(0,40);
+        cylinders.left.pA = QRandomGenerator::global()->bounded(40) - 0.45;
+       cylinders.right.pA = QRandomGenerator::global()->bounded(40) + 0.45;
+        cylinders.left.pB = QRandomGenerator::global()->bounded(40) - 0.25;
+       cylinders.right.pB = QRandomGenerator::global()->bounded(40) + 0.25;
         cylinders.left.fY = QRandomGenerator::global()->bounded(-40,40);
        cylinders.right.fY = QRandomGenerator::global()->bounded(-40,40);
         cylinders.left.sY = QRandomGenerator::global()->bounded(-40,40);
        cylinders.right.sY = QRandomGenerator::global()->bounded(-40,40);
-        cylinders.left.fS = QRandomGenerator::global()->bounded(0,15);
-       cylinders.right.fS = QRandomGenerator::global()->bounded(0,15);
+        cylinders.left.fS = QRandomGenerator::global()->bounded(15);
+       cylinders.right.fS = QRandomGenerator::global()->bounded(15);
        is_new_cylinder = true;
     }
     if( is_new_cylinder ) {

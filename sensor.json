@@ -1,12 +1,12 @@
 {
     "fS_graph": {
         "isChecked": true,
-        "y_diap_max": 12,
-        "y_diap_min": 10,
-        "y_tick": 20
+        "y_diap_max": 25,
+        "y_diap_min": 0,
+        "y_tick": 6
     },
     "fY_graph": {
-        "isChecked": false,
+        "isChecked": true,
         "y_diap_max": 100,
         "y_diap_min": -100,
         "y_tick": 6
@@ -14,8 +14,8 @@
     "gb_fT_L": {
         "adc1index": 7,
         "adc3index": 2,
-        "isAdc1": false,
-        "isAdc3": true,
+        "isAdc1": true,
+        "isAdc3": false,
         "isChecked": true,
         "isFilter": true
     },
@@ -44,19 +44,19 @@
         "isFilter": false
     },
     "pA_graph": {
-        "isChecked": false,
+        "isChecked": true,
         "y_diap_max": 250,
         "y_diap_min": 0,
         "y_tick": 6
     },
     "pB_graph": {
-        "isChecked": false,
+        "isChecked": true,
         "y_diap_max": 250,
         "y_diap_min": 0,
         "y_tick": 6
     },
     "sY_graph": {
-        "isChecked": false,
+        "isChecked": true,
         "y_diap_max": 100,
         "y_diap_min": -100,
         "y_tick": 6
