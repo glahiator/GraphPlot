@@ -16,7 +16,7 @@ SOURCES += \
     Utilites.cpp \
     main.cpp \
     GraphPlot.cpp \
-    snap7.cpp
+#    snap7.cpp
 
 HEADERS += \
     CalculateCylinder.h \
@@ -25,7 +25,7 @@ HEADERS += \
     PLC_Connector.h \
     Sensor.h \
     Utilites.h \
-    snap7.h
+#    snap7.h
 
 FORMS += \
     GraphPlot.ui
