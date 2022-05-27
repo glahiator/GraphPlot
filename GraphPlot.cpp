@@ -305,9 +305,26 @@ void GraphPlot::handle_fT_tfT()
 }
 void GraphPlot::handle_pA_pB_fY_sY()
 {
-    ui->sb_pA_val->setValue( QRandomGenerator::global()->bounded(0,40) );
-    pA_graph->ChartIncrement( QRandomGenerator::global()->bounded(0,40),
-                              QRandomGenerator::global()->bounded(0,40));
+    if( !ui->btn_pA_lc->isChecked() ) ui->btn_pA_lc->setText( QString::number( (double)QRandomGenerator::global()->bounded(0,40),'f', 2 ) );
+    if( !ui->btn_pA_rc->isChecked() ) ui->btn_pA_rc->setText( QString::number( (double)QRandomGenerator::global()->bounded(0,40),'f', 2 ) );
+
+    ui->btn_pB_lc->setText( QString::number( (double)QRandomGenerator::global()->bounded(0,40),'f', 2 ) );
+    ui->btn_pB_rc->setText( QString::number( (double)QRandomGenerator::global()->bounded(0,40),'f', 2 ) );
+
+    ui->btn_fY_lc->setText( QString::number( (double)QRandomGenerator::global()->bounded(0,40),'f', 2 ) );
+    ui->btn_fY_rc->setText( QString::number( (double)QRandomGenerator::global()->bounded(0,40),'f', 2 ) );
+
+    ui->btn_sY_lc->setText( QString::number( (double)QRandomGenerator::global()->bounded(0,40),'f', 2 ) );
+    ui->btn_sY_rc->setText( QString::number( (double)QRandomGenerator::global()->bounded(0,40),'f', 2 ) );
+
+    ui->btn_fS_lc->setText( QString::number( (double)QRandomGenerator::global()->bounded(0,40),'f', 2 ) );
+    ui->btn_fS_rc->setText( QString::number( (double)QRandomGenerator::global()->bounded(0,40),'f', 2 ) );
+
+//    pA_graph->ChartIncrement( QRandomGenerator::global()->bounded(0,40),
+//                              QRandomGenerator::global()->bounded(0,40));
+    pA_graph->ChartIncrement_if( !ui->btn_pA_rc->isChecked(), QRandomGenerator::global()->bounded(0,40),
+                                 !ui->btn_pA_lc->isChecked(), QRandomGenerator::global()->bounded(0,40));
+
 
     pB_graph->ChartIncrement( QRandomGenerator::global()->bounded(0,40),
                               QRandomGenerator::global()->bounded(0,40));
