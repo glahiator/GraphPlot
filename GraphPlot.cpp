@@ -7,15 +7,19 @@ GraphPlot::GraphPlot(QWidget *parent)
 {
     ui->setupUi(this);
     sens_data = SensorVals();
+    cylinders = plc_cylinder();
 
     LoadConfigure();
+    ui->btn_cylinder_stop->setEnabled(false);
 
     counter = 0;
     switcher = false;
     is_Check = false;
 
     isDemo_fT_tfT = false;
+    isDemo_pA_pB_fY_sY = false;
 
+    is_new_cylinder = false;
     is_new_sensor = false;
     is_new_force = false;
 
@@ -30,7 +34,10 @@ GraphPlot::GraphPlot(QWidget *parent)
     fS_graph = new UniqueGraph( "Обратная связь положения штока", this);
 
     connect( ui->btn_cylinder_start, &QPushButton::clicked, this, &GraphPlot::StartCylinderGraphs );
-    connect( ui->btn_cylinder_stop, &QPushButton::clicked, this, &GraphPlot::StopCylinderGraphs );
+    connect( ui->btn_cylinder_stop,  &QPushButton::clicked, this, &GraphPlot::StopCylinderGraphs );
+    connect( ui->chb_demo_cylinders, &QCheckBox::clicked, this, [=]{
+        isDemo_pA_pB_fY_sY = ui->chb_demo_cylinders->isChecked();
+    });
 
     fT_graph  = new UniqueGraph( "Объемный расход", this);
     tfT_graph = new UniqueGraph( "Температура расхода", this);
@@ -46,7 +53,7 @@ GraphPlot::GraphPlot(QWidget *parent)
     connect( sensor, &Sensor::sensorPackReceive, this, &GraphPlot::SensorDataUpdate );
 
     plc = new PLC_Connector(2688, QHostAddress("192.168.1.31"), 8888, this);
-//    connect( plc, &PLC_Connector::plcDataReceive, this, &GraphPlot::PLC_DataUpdate );
+    connect( plc, &PLC_Connector::ready_cylinder, this, &GraphPlot::update_cylinder );
 
     QDateTime all(QDateTime::currentDateTime().date(), QDateTime::currentDateTime().time().addSecs(-10));
     timeRightPressure
@@ -67,32 +74,31 @@ GraphPlot::GraphPlot(QWidget *parent)
     SetGraphStockLoss();
     SetGraphDiffForce();
 
-    connect( ui->sb_pA_diap_max, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::GraphDiapSet );
-    connect( ui->sb_pA_diap_min, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::GraphDiapSet );
-    connect( ui->sb_pB_diap_max, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::GraphDiapSet );
-    connect( ui->sb_pB_diap_min, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::GraphDiapSet );
-    connect( ui->sb_sY_diap_max, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::GraphDiapSet );
-    connect( ui->sb_sY_diap_min, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::GraphDiapSet );
-    connect( ui->sb_fY_diap_max, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::GraphDiapSet );
-    connect( ui->sb_fY_diap_min, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::GraphDiapSet );
-    connect( ui->sb_fS_diap_max, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::GraphDiapSet );
-    connect( ui->sb_fS_diap_min, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::GraphDiapSet );
+    connect( ui->sb_pA_diap_max, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphDiap );
+    connect( ui->sb_pA_diap_min, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphDiap );
+    connect( ui->sb_pB_diap_max, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphDiap );
+    connect( ui->sb_pB_diap_min, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphDiap );
+    connect( ui->sb_sY_diap_max, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphDiap );
+    connect( ui->sb_sY_diap_min, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphDiap );
+    connect( ui->sb_fY_diap_max, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphDiap );
+    connect( ui->sb_fY_diap_min, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphDiap );
+    connect( ui->sb_fS_diap_max, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphDiap );
+    connect( ui->sb_fS_diap_min, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphDiap );
 
-    connect( ui->sb_pA_discret, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::GraphStickCountSet );
-    connect( ui->sb_pB_discret, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::GraphStickCountSet );
-    connect( ui->sb_sY_discret, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::GraphStickCountSet );
-    connect( ui->sb_fY_discret, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::GraphStickCountSet );
-    connect( ui->sb_fS_discret, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::GraphStickCountSet );
-
-
+    connect( ui->sb_pA_discret, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphStickCount );
+    connect( ui->sb_pB_discret, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphStickCount );
+    connect( ui->sb_sY_discret, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphStickCount );
+    connect( ui->sb_fY_discret, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphStickCount );
+    connect( ui->sb_fS_discret, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphStickCount );
 
 
+    connect( ui->chb_pA, &QCheckBox::clicked, this, &GraphPlot::SetCylinderGraphsShow );
+    connect( ui->chb_pB, &QCheckBox::clicked, this, &GraphPlot::SetCylinderGraphsShow );
+    connect( ui->chb_fY, &QCheckBox::clicked, this, &GraphPlot::SetCylinderGraphsShow );
+    connect( ui->chb_sY, &QCheckBox::clicked, this, &GraphPlot::SetCylinderGraphsShow );
+    connect( ui->chb_fS, &QCheckBox::clicked, this, &GraphPlot::SetCylinderGraphsShow );
 
-    connect( ui->chb_pA, &QCheckBox::clicked, this, &GraphPlot::TabGraphShowingLeft );
-    connect( ui->chb_pB, &QCheckBox::clicked, this, &GraphPlot::TabGraphShowingLeft );
-    connect( ui->chb_fY, &QCheckBox::clicked, this, &GraphPlot::TabGraphShowingLeft );
-    connect( ui->chb_sY, &QCheckBox::clicked, this, &GraphPlot::TabGraphShowingLeft );
-    connect( ui->chb_fS, &QCheckBox::clicked, this, &GraphPlot::TabGraphShowingLeft );
+
 
     connect( ui->tab_right_cb_position_shtok, &QCheckBox::clicked, this, &GraphPlot::TabGraphShowingRight );
     connect( ui->tab_right_cb_position_zolot, &QCheckBox::clicked, this, &GraphPlot::TabGraphShowingRight );
@@ -199,6 +205,361 @@ void GraphPlot::SetDemo()
     isDemo_fT_tfT = ui->act_demo->isChecked();
 }
 
+
+
+// Утилиты для сохранения конфигов
+void GraphPlot::LoadConfigure()
+{
+    QFile file;
+    file.setFileName(configFile);
+    if(!file.open(QIODevice::ReadOnly | QIODevice::Text) ){
+        qDebug() << "ERROR WHEN OPENING CONFIG FILE" << configFile << file.errorString();
+    }
+    QJsonParseError err;
+    QJsonDocument src = QJsonDocument::fromJson( QString(file.readAll()).toUtf8(), &err);
+    file.close();
+
+    QJsonObject jsonParse = src.object().value( "gb_fT_L" ).toObject();
+    ui->gb_fT_L->setChecked( jsonParse.value( "isChecked" ).toBool() );
+    ui->rb_adc1_fT_L->setChecked( jsonParse.value( "isAdc1" ).toBool() );
+    ui->rb_adc3_fT_L->setChecked( jsonParse.value( "isAdc3" ).toBool() );
+    ui->cb_adc1_fT_L->setCurrentIndex( jsonParse.value( "adc1index" ).toInt() );
+    ui->cb_adc3_fT_L->setCurrentIndex( jsonParse.value( "adc3index" ).toInt() );
+    ui->chb_filt_fT_L->setChecked(jsonParse.value( "isFilter"  ).toBool() );
+
+    jsonParse = src.object().value( "gb_fT_R" ).toObject();
+    ui->gb_fT_R->setChecked( jsonParse.value( "isChecked" ).toBool() );
+    ui->rb_adc1_fT_R->setChecked( jsonParse.value( "isAdc1" ).toBool() );
+    ui->rb_adc3_fT_R->setChecked( jsonParse.value( "isAdc3" ).toBool() );
+    ui->cb_adc1_fT_R->setCurrentIndex( jsonParse.value( "adc1index" ).toInt() );
+    ui->cb_adc3_fT_R->setCurrentIndex( jsonParse.value( "adc3index" ).toInt() );
+    ui->chb_filt_fT_R->setChecked(jsonParse.value( "isFilter"  ).toBool() );
+
+    jsonParse = src.object().value( "gb_tfT_L" ).toObject();
+    ui->gb_tfT_L->setChecked( jsonParse.value( "isChecked" ).toBool() );
+    ui->rb_adc1_tfT_L->setChecked( jsonParse.value( "isAdc1" ).toBool() );
+    ui->rb_adc3_tfT_L->setChecked( jsonParse.value( "isAdc3" ).toBool() );
+    ui->cb_adc1_tfT_L->setCurrentIndex( jsonParse.value( "adc1index" ).toInt() );
+    ui->cb_adc3_tfT_L->setCurrentIndex( jsonParse.value( "adc3index" ).toInt() );
+    ui->chb_filt_tfT_L->setChecked(jsonParse.value( "isFilter"  ).toBool() );
+
+    jsonParse = src.object().value( "gb_tfT_R" ).toObject();
+    ui->gb_tfT_R->setChecked( jsonParse.value( "isChecked" ).toBool() );
+    ui->rb_adc1_tfT_R->setChecked( jsonParse.value( "isAdc1" ).toBool() );
+    ui->rb_adc3_tfT_R->setChecked( jsonParse.value( "isAdc3" ).toBool() );
+    ui->cb_adc1_tfT_R->setCurrentIndex( jsonParse.value( "adc1index" ).toInt() );
+    ui->cb_adc3_tfT_R->setCurrentIndex( jsonParse.value( "adc3index" ).toInt() );
+    ui->chb_filt_tfT_R->setChecked(jsonParse.value( "isFilter"  ).toBool() );
+
+    jsonParse = src.object().value( "pA_graph" ).toObject();
+   ui->chb_pA->setChecked(       jsonParse.value( "isChecked" ).toBool() );
+    ui->sb_pA_diap_min->setValue( jsonParse.value( "y_diap_min" ).toInt() );
+    ui->sb_pA_diap_max->setValue( jsonParse.value( "y_diap_max" ).toInt() );
+    ui->sb_pA_discret->setValue(  jsonParse.value( "y_tick" ).toInt() );
+
+    jsonParse = src.object().value( "pB_graph" ).toObject();
+   ui->chb_pB->setChecked(       jsonParse.value( "isChecked" ).toBool() );
+    ui->sb_pB_diap_min->setValue( jsonParse.value( "y_diap_min" ).toInt() );
+    ui->sb_pB_diap_max->setValue( jsonParse.value( "y_diap_max" ).toInt() );
+    ui->sb_pB_discret->setValue(  jsonParse.value( "y_tick" ).toInt() );
+
+    jsonParse = src.object().value( "sY_graph" ).toObject();
+   ui->chb_sY->setChecked(       jsonParse.value( "isChecked" ).toBool() );
+    ui->sb_sY_diap_min->setValue( jsonParse.value( "y_diap_min" ).toInt() );
+    ui->sb_sY_diap_max->setValue( jsonParse.value( "y_diap_max" ).toInt() );
+    ui->sb_sY_discret->setValue(  jsonParse.value( "y_tick" ).toInt() );
+
+    jsonParse = src.object().value( "fS_graph" ).toObject();
+   ui->chb_fS->setChecked(       jsonParse.value( "isChecked" ).toBool() );
+    ui->sb_fS_diap_min->setValue( jsonParse.value( "y_diap_min" ).toInt() );
+    ui->sb_fS_diap_max->setValue( jsonParse.value( "y_diap_max" ).toInt() );
+    ui->sb_fS_discret->setValue(  jsonParse.value( "y_tick" ).toInt() );
+
+    jsonParse = src.object().value( "fY_graph" ).toObject();
+   ui->chb_fY->setChecked(       jsonParse.value( "isChecked" ).toBool() );
+    ui->sb_fY_diap_min->setValue( jsonParse.value( "y_diap_min" ).toInt() );
+    ui->sb_fY_diap_max->setValue( jsonParse.value( "y_diap_max" ).toInt() );
+    ui->sb_fY_discret->setValue(  jsonParse.value( "y_tick" ).toInt() );
+
+}
+void GraphPlot::SaveConfigure()
+{
+    QJsonObject fT_L_conf = QJsonObject();
+    fT_L_conf.insert( "isAdc1" ,   ui->rb_adc1_fT_L->isChecked() ) ;
+    fT_L_conf.insert( "isAdc3"  ,  ui->rb_adc3_fT_L->isChecked() );
+    fT_L_conf.insert( "isFilter" , ui->chb_filt_fT_L->isChecked() );
+    fT_L_conf.insert( "adc1index", ui->cb_adc1_fT_L->currentIndex() );
+    fT_L_conf.insert( "adc3index", ui->cb_adc3_fT_L->currentIndex() );
+    fT_L_conf.insert( "isChecked", ui->gb_fT_L->isChecked());
+
+    QJsonObject fT_R_conf = QJsonObject();
+    fT_R_conf.insert( "isAdc1" ,   ui->rb_adc1_fT_R->isChecked() ) ;
+    fT_R_conf.insert( "isAdc3"  ,  ui->rb_adc3_fT_R->isChecked() );
+    fT_R_conf.insert( "isFilter" , ui->chb_filt_fT_R->isChecked() );
+    fT_R_conf.insert( "adc1index", ui->cb_adc1_fT_R->currentIndex() );
+    fT_R_conf.insert( "adc3index", ui->cb_adc3_fT_R->currentIndex() );
+    fT_R_conf.insert( "isChecked", ui->gb_fT_R->isChecked());
+
+    QJsonObject tfT_L_conf = QJsonObject();
+    tfT_L_conf.insert( "isAdc1" ,   ui->rb_adc1_tfT_L->isChecked() ) ;
+    tfT_L_conf.insert( "isAdc3"  ,  ui->rb_adc3_tfT_L->isChecked() );
+    tfT_L_conf.insert( "isFilter" , ui->chb_filt_tfT_L->isChecked() );
+    tfT_L_conf.insert( "adc1index", ui->cb_adc1_tfT_L->currentIndex() );
+    tfT_L_conf.insert( "adc3index", ui->cb_adc3_tfT_L->currentIndex() );
+    tfT_L_conf.insert( "isChecked", ui->gb_tfT_L->isChecked());
+
+    QJsonObject tfT_R_conf = QJsonObject();
+    tfT_R_conf.insert( "isAdc1" ,   ui->rb_adc1_tfT_R->isChecked() ) ;
+    tfT_R_conf.insert( "isAdc3"  ,  ui->rb_adc3_tfT_R->isChecked() );
+    tfT_R_conf.insert( "isFilter" , ui->chb_filt_tfT_R->isChecked() );
+    tfT_R_conf.insert( "adc1index", ui->cb_adc1_tfT_R->currentIndex() );
+    tfT_R_conf.insert( "adc3index", ui->cb_adc3_tfT_R->currentIndex() );
+    tfT_R_conf.insert( "isChecked", ui->gb_tfT_R->isChecked());
+
+    QJsonObject pA_graph_conf = QJsonObject();
+    pA_graph_conf.insert( "isChecked",  ui->chb_pA->isChecked() );
+    pA_graph_conf.insert( "y_diap_min", ui->sb_pA_diap_min->value() );
+    pA_graph_conf.insert( "y_diap_max", ui->sb_pA_diap_max->value()  );
+    pA_graph_conf.insert( "y_tick",     ui->sb_pA_discret->value()  );
+
+    QJsonObject pB_graph_conf = QJsonObject();
+    pB_graph_conf.insert( "isChecked", ui->chb_pB->isChecked() );
+    pB_graph_conf.insert( "y_diap_min", ui->sb_pB_diap_min->value() );
+    pB_graph_conf.insert( "y_diap_max", ui->sb_pB_diap_max->value()  );
+    pB_graph_conf.insert( "y_tick",     ui->sb_pB_discret->value()  );
+
+    QJsonObject sY_graph_conf = QJsonObject();
+    sY_graph_conf.insert( "isChecked", ui->chb_sY->isChecked() );
+    sY_graph_conf.insert( "y_diap_min", ui->sb_sY_diap_min->value() );
+    sY_graph_conf.insert( "y_diap_max", ui->sb_sY_diap_max->value()  );
+    sY_graph_conf.insert( "y_tick",     ui->sb_sY_discret->value()  );
+
+    QJsonObject fY_graph_conf = QJsonObject();
+    fY_graph_conf.insert( "isChecked", ui->chb_fY->isChecked() );
+    fY_graph_conf.insert( "y_diap_min", ui->sb_fY_diap_min->value() );
+    fY_graph_conf.insert( "y_diap_max", ui->sb_fY_diap_max->value()  );
+    fY_graph_conf.insert( "y_tick",     ui->sb_fY_discret->value()  );
+
+    QJsonObject fS_graph_conf = QJsonObject();
+    fS_graph_conf.insert( "isChecked", ui->chb_fS->isChecked() );
+    fS_graph_conf.insert( "y_diap_min", ui->sb_fS_diap_min->value() );
+    fS_graph_conf.insert( "y_diap_max", ui->sb_fS_diap_max->value()  );
+    fS_graph_conf.insert( "y_tick",     ui->sb_fS_discret->value()  );
+
+
+    QJsonObject mini_root = QJsonObject();
+    mini_root.insert( "gb_fT_L",   fT_L_conf);
+    mini_root.insert( "gb_fT_R",   fT_R_conf);
+    mini_root.insert( "gb_tfT_L",  tfT_L_conf);
+    mini_root.insert( "gb_tfT_R",  tfT_R_conf);
+    mini_root.insert( "pA_graph",  pA_graph_conf);
+    mini_root.insert( "pB_graph",  pB_graph_conf);
+    mini_root.insert( "sY_graph",  sY_graph_conf);
+    mini_root.insert( "fY_graph",  fY_graph_conf);
+    mini_root.insert( "fS_graph",  fS_graph_conf);
+
+
+    QJsonDocument doc = QJsonDocument();
+    doc.setObject(mini_root);
+    QFile file;
+    file.setFileName(configFile);
+    if(!file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate) ){
+        qDebug() << "ERROR WHEN OPENING CONFIG FILE" << configFile << file.errorString();
+    }
+    file.write(doc.toJson());
+    file.close();
+    qDebug() << "Save configure";
+}
+
+// объединил fT и tfT в один обработчик, так как приходят одновременно с контроллера
+void GraphPlot::handle_fT_tfT()
+{    
+    if( isDemo_fT_tfT && !is_new_sensor ) {
+        sens_data.fT_L  = QRandomGenerator::global()->bounded(0,10);
+        sens_data.fT_R  = QRandomGenerator::global()->bounded(0,10);
+        sens_data.tfT_L = QRandomGenerator::global()->bounded(0,5);
+        sens_data.tfT_R = QRandomGenerator::global()->bounded(0,5);
+        is_new_sensor = true;
+    }
+    if( is_new_sensor ){
+        fT_graph->ChartIncrement_if( ui->gb_fT_L->isChecked(), sens_data.fT_L,
+                                     ui->gb_fT_R->isChecked(), sens_data.fT_R);
+        tfT_graph->ChartIncrement_if( ui->gb_tfT_L->isChecked(), sens_data.tfT_L,
+                                      ui->gb_tfT_R->isChecked(), sens_data.tfT_R );
+        is_new_sensor = false;
+    }
+
+    fT_graph->ChartScroll(  ui->view_fT->chart()->plotArea().width()  );
+    tfT_graph->ChartScroll( ui->view_tfT->chart()->plotArea().width() );
+}
+void GraphPlot::handle_pA_pB_fY_sY()
+{
+    if( isDemo_pA_pB_fY_sY && !is_new_cylinder ) {
+        cylinders.left.pA = QRandomGenerator::global()->bounded(0,40);
+       cylinders.right.pA = QRandomGenerator::global()->bounded(0,40);
+        cylinders.left.pB = QRandomGenerator::global()->bounded(0,40);
+       cylinders.right.pB = QRandomGenerator::global()->bounded(0,40);
+        cylinders.left.fY = QRandomGenerator::global()->bounded(-40,40);
+       cylinders.right.fY = QRandomGenerator::global()->bounded(-40,40);
+        cylinders.left.sY = QRandomGenerator::global()->bounded(-40,40);
+       cylinders.right.sY = QRandomGenerator::global()->bounded(-40,40);
+        cylinders.left.fS = QRandomGenerator::global()->bounded(0,15);
+       cylinders.right.fS = QRandomGenerator::global()->bounded(0,15);
+       is_new_cylinder = true;
+    }
+    if( is_new_cylinder ) {
+        if( !ui->btn_pA_lc->isChecked() ) ui->btn_pA_lc->setText(QString::number( cylinders.left.pA ,'f', 2 ) );
+        if( !ui->btn_pA_rc->isChecked() ) ui->btn_pA_rc->setText(QString::number( cylinders.right.pA,'f', 2 ) );
+
+        if( !ui->btn_pB_lc->isChecked() ) ui->btn_pB_lc->setText(QString::number( cylinders.left.pB ,'f', 2 ) );
+        if( !ui->btn_pB_rc->isChecked() ) ui->btn_pB_rc->setText(QString::number( cylinders.right.pB,'f', 2 ) );
+
+        if( !ui->btn_fY_lc->isChecked() ) ui->btn_fY_lc->setText(QString::number( cylinders.left.fY ,'f', 2 ) );
+        if( !ui->btn_fY_rc->isChecked() ) ui->btn_fY_rc->setText(QString::number( cylinders.right.fY,'f', 2 ) );
+
+        if( !ui->btn_sY_lc->isChecked() ) ui->btn_sY_lc->setText(QString::number( cylinders.left.sY ,'f', 2 ) );
+        if( !ui->btn_sY_rc->isChecked() ) ui->btn_sY_rc->setText(QString::number( cylinders.right.sY,'f', 2 ) );
+
+        if( !ui->btn_fS_lc->isChecked() ) ui->btn_fS_lc->setText(QString::number( cylinders.left.fS ,'f', 2 ) );
+        if( !ui->btn_fS_rc->isChecked() ) ui->btn_fS_rc->setText(QString::number( cylinders.right.fS,'f', 2 ) );
+
+        pA_graph->ChartIncrement_if( !ui->btn_pA_lc->isChecked(),  cylinders.left.pA,
+                                     !ui->btn_pA_rc->isChecked(), cylinders.right.pA);
+
+        pB_graph->ChartIncrement_if( !ui->btn_pB_lc->isChecked(),  cylinders.left.pB,
+                                     !ui->btn_pB_rc->isChecked(), cylinders.right.pB);
+
+        fY_graph->ChartIncrement_if( !ui->btn_fY_lc->isChecked(),  cylinders.left.fY,
+                                     !ui->btn_fY_rc->isChecked(), cylinders.right.fY);
+
+        sY_graph->ChartIncrement_if( !ui->btn_sY_lc->isChecked(),  cylinders.left.sY,
+                                     !ui->btn_sY_rc->isChecked(), cylinders.right.sY);
+
+        fS_graph->ChartIncrement_if( !ui->btn_fS_lc->isChecked(),  cylinders.left.fS,
+                                     !ui->btn_fS_rc->isChecked(), cylinders.right.fS);
+        is_new_cylinder = false;
+    }
+
+    pA_graph->ChartScroll(  ui->view_pA->chart()->plotArea().width()  );
+    pB_graph->ChartScroll(  ui->view_pB->chart()->plotArea().width()  );
+    fY_graph->ChartScroll(  ui->view_fY->chart()->plotArea().width()  );
+    sY_graph->ChartScroll(  ui->view_sY->chart()->plotArea().width()  );
+    fS_graph->ChartScroll(  ui->view_fS->chart()->plotArea().width()  );
+}
+
+void GraphPlot::SetCylinderGraphsShow()
+{
+    if( ui->chb_sY->isChecked() ){
+        ui->view_sY->show();
+    }
+    else{
+        ui->view_sY->hide();
+    }
+    if( ui->chb_fY->isChecked() ){
+        ui->view_fY->show();
+    }
+    else{
+        ui->view_fY->hide();
+    }
+    if( ui->chb_pA->isChecked() ){
+        ui->view_pA->show();
+    }
+    else{
+        ui->view_pA->hide();
+    }
+    if( ui->chb_pB->isChecked() ){
+        ui->view_pB->show();
+    }
+    else{
+        ui->view_pB->hide();
+    }
+    if( ui->chb_fS->isChecked() ){
+        ui->view_fS->show();
+    }
+    else {
+        ui->view_fS->hide();
+    }
+}
+void GraphPlot::SetGraphDiap()
+{
+    QSpinBox* sb = qobject_cast<QSpinBox*>(sender());
+    if( nullptr == sb ) {
+        return;
+    }
+
+    QString name = sb->objectName();
+    if( name.contains("_pA_") ) {
+        pA_graph->SetRange( QPoint(ui->sb_pA_diap_min->value(), ui->sb_pA_diap_max->value() ));
+    }
+    else if( name.contains("_pB_") ) {
+        pB_graph->SetRange( QPoint(ui->sb_pB_diap_min->value(), ui->sb_pB_diap_max->value() ));
+    }
+    else if( name.contains("_sY_") ) {
+        sY_graph->SetRange( QPoint(ui->sb_sY_diap_min->value(), ui->sb_sY_diap_max->value() ));
+    }
+    else if( name.contains("_fY_") ) {
+        fY_graph->SetRange( QPoint(ui->sb_fY_diap_min->value(), ui->sb_fY_diap_max->value() ));
+    }
+    else if( name.contains("_fS_") ) {
+        fS_graph->SetRange( QPoint(ui->sb_fS_diap_min->value(), ui->sb_fS_diap_max->value() ));
+    }
+}
+void GraphPlot::SetGraphStickCount()
+{
+    QSpinBox* sb = qobject_cast<QSpinBox*>(sender());
+    if( nullptr == sb ) {
+        return;
+    }
+
+    QString name = sb->objectName();
+    if( name.contains("_pA_") ) {
+        pA_graph->SetTickCount( sb->value() );
+    }
+    else if( name.contains("_pB_") ) {
+        pB_graph->SetTickCount( sb->value() );
+    }
+    else if( name.contains("_sY_") ) {
+        sY_graph->SetTickCount( sb->value() );
+    }
+    else if( name.contains("_fY_") ) {
+        fY_graph->SetTickCount( sb->value() );
+    }
+    else if( name.contains("_fS_") ) {
+        fS_graph->SetTickCount( sb->value() );
+    }
+}
+
+void GraphPlot::StartCylinderGraphs()
+{
+    pA_graph->Configure("Давление, бар", QPoint( ui->sb_pA_diap_min->value(),ui->sb_pA_diap_max->value()),    ui->sb_pA_discret->value());
+    pB_graph->Configure("Давление, бар", QPoint( ui->sb_pB_diap_min->value(),ui->sb_pB_diap_max->value()),    ui->sb_pB_discret->value());
+    fY_graph->Configure("Положение, %",  QPoint( ui->sb_fY_diap_min->value(),ui->sb_fY_diap_max->value()),    ui->sb_fY_discret->value());
+    sY_graph->Configure("Задание, %",    QPoint( ui->sb_sY_diap_min->value(),ui->sb_sY_diap_max->value()),    ui->sb_sY_discret->value());
+    fS_graph->Configure("Положение, мм", QPoint( ui->sb_fS_diap_min->value(),ui->sb_fS_diap_max->value()),    ui->sb_fS_discret->value());
+    ui->view_pA->setChart(pA_graph->chart);
+    ui->view_pB->setChart(pB_graph->chart);
+    ui->view_fY->setChart(fY_graph->chart);
+    ui->view_sY->setChart(sY_graph->chart);
+    ui->view_fS->setChart(fS_graph->chart);
+    ui->view_pA->setRenderHint( QPainter::Antialiasing);
+    ui->view_pB->setRenderHint( QPainter::Antialiasing);
+    ui->view_fY->setRenderHint( QPainter::Antialiasing);
+    ui->view_fS->setRenderHint( QPainter::Antialiasing);
+    ui->view_sY->setRenderHint( QPainter::Antialiasing);
+
+    connect( timer, &QTimer::timeout, this, &GraphPlot::handle_pA_pB_fY_sY );
+    ui->btn_cylinder_start->setEnabled(false);
+    ui->btn_cylinder_stop->setEnabled(true);
+}
+void GraphPlot::StopCylinderGraphs()
+{
+    disconnect( timer, &QTimer::timeout, this, &GraphPlot::handle_pA_pB_fY_sY );
+    ui->btn_cylinder_start->setEnabled(true);
+    ui->btn_cylinder_stop->setEnabled(false);
+}
+
+
+
 void GraphPlot::handleRightTabPlot()
 {
     qreal x = ui->tab_right_gv_pressure->chart()->plotArea().width() / ax_X_RightPressure->tickCount();
@@ -282,181 +643,6 @@ void GraphPlot::handleCalcTabPlot()
     chartStockLoss->scroll( x_StockLoss, 0 );
 }
 
-// объединил fT и tfT в один обработчик, так как приходят одновременно с контроллера
-void GraphPlot::handle_fT_tfT()
-{
-    if( is_new_sensor ){
-        fT_graph->ChartIncrement_if( ui->gb_fT_L->isChecked(), sens_data.fT_L,
-                                  ui->gb_fT_R->isChecked(), sens_data.fT_R);
-        tfT_graph->ChartIncrement_if( ui->gb_tfT_L->isChecked(), sens_data.tfT_L,
-                                   ui->gb_tfT_R->isChecked(), sens_data.tfT_R );
-
-    }
-    else if(isDemo_fT_tfT) {
-        fT_graph->ChartIncrement_if( ui->gb_fT_L->isChecked(), QRandomGenerator::global()->bounded(0,10),
-                                  ui->gb_fT_R->isChecked(), QRandomGenerator::global()->bounded(0,10));
-
-        tfT_graph->ChartIncrement_if( ui->gb_tfT_L->isChecked(), QRandomGenerator::global()->bounded(0,5),
-                                   ui->gb_tfT_R->isChecked(), QRandomGenerator::global()->bounded(0,5) );
-    }
-
-    fT_graph->ChartScroll(  ui->view_fT->chart()->plotArea().width()  );
-    tfT_graph->ChartScroll( ui->view_tfT->chart()->plotArea().width() );
-}
-void GraphPlot::handle_pA_pB_fY_sY()
-{
-    if( !ui->btn_pA_lc->isChecked() ) ui->btn_pA_lc->setText( QString::number( (double)QRandomGenerator::global()->bounded(0,40),'f', 2 ) );
-    if( !ui->btn_pA_rc->isChecked() ) ui->btn_pA_rc->setText( QString::number( (double)QRandomGenerator::global()->bounded(0,40),'f', 2 ) );
-
-    ui->btn_pB_lc->setText( QString::number( (double)QRandomGenerator::global()->bounded(0,40),'f', 2 ) );
-    ui->btn_pB_rc->setText( QString::number( (double)QRandomGenerator::global()->bounded(0,40),'f', 2 ) );
-
-    ui->btn_fY_lc->setText( QString::number( (double)QRandomGenerator::global()->bounded(0,40),'f', 2 ) );
-    ui->btn_fY_rc->setText( QString::number( (double)QRandomGenerator::global()->bounded(0,40),'f', 2 ) );
-
-    ui->btn_sY_lc->setText( QString::number( (double)QRandomGenerator::global()->bounded(0,40),'f', 2 ) );
-    ui->btn_sY_rc->setText( QString::number( (double)QRandomGenerator::global()->bounded(0,40),'f', 2 ) );
-
-    ui->btn_fS_lc->setText( QString::number( (double)QRandomGenerator::global()->bounded(0,40),'f', 2 ) );
-    ui->btn_fS_rc->setText( QString::number( (double)QRandomGenerator::global()->bounded(0,40),'f', 2 ) );
-
-//    pA_graph->ChartIncrement( QRandomGenerator::global()->bounded(0,40),
-//                              QRandomGenerator::global()->bounded(0,40));
-    pA_graph->ChartIncrement_if( !ui->btn_pA_rc->isChecked(), QRandomGenerator::global()->bounded(0,40),
-                                 !ui->btn_pA_lc->isChecked(), QRandomGenerator::global()->bounded(0,40));
-
-
-    pB_graph->ChartIncrement( QRandomGenerator::global()->bounded(0,40),
-                              QRandomGenerator::global()->bounded(0,40));
-
-    fY_graph->ChartIncrement( QRandomGenerator::global()->bounded(-40,40),
-                              QRandomGenerator::global()->bounded(-40,40));
-
-    sY_graph->ChartIncrement( QRandomGenerator::global()->bounded(-40,40),
-                              QRandomGenerator::global()->bounded(-40,40));
-
-
-    fS_graph->ChartIncrement( QRandomGenerator::global()->bounded(0,15),
-                              QRandomGenerator::global()->bounded(0,15));
-
-
-    pA_graph->ChartScroll(  ui->view_pA->chart()->plotArea().width()  );
-    pB_graph->ChartScroll(  ui->view_pB->chart()->plotArea().width()  );
-    fY_graph->ChartScroll(  ui->view_fY->chart()->plotArea().width()  );
-    sY_graph->ChartScroll(  ui->view_sY->chart()->plotArea().width()  );
-    fS_graph->ChartScroll(  ui->view_fS->chart()->plotArea().width()  );
-
-}
-
-void GraphPlot::TabGraphShowingLeft()
-{
-    if( ui->chb_sY->isChecked() ){
-        ui->view_sY->show();
-    }
-    else{
-        ui->view_sY->hide();
-    }
-    if( ui->chb_fY->isChecked() ){
-        ui->view_fY->show();
-    }
-    else{
-        ui->view_fY->hide();
-    }
-    if( ui->chb_pA->isChecked() ){
-        ui->view_pA->show();
-    }
-    else{
-        ui->view_pA->hide();
-    }
-    if( ui->chb_pB->isChecked() ){
-        ui->view_pB->show();
-    }
-    else{
-        ui->view_pB->hide();
-    }
-    if( ui->chb_fS->isChecked() ){
-        ui->view_fS->show();
-    }
-    else {
-        ui->view_fS->hide();
-    }
-}
-
-void GraphPlot::GraphDiapSet()
-{
-    QSpinBox* sb = qobject_cast<QSpinBox*>(sender());
-    if( nullptr == sb ) {
-        return;
-    }
-
-    QString name = sb->objectName();
-    if( name.contains("_pA_") ) {
-        pA_graph->SetRange( QPoint(ui->sb_pA_diap_min->value(), ui->sb_pA_diap_max->value() ));
-    }
-    else if( name.contains("_pB_") ) {
-        pB_graph->SetRange( QPoint(ui->sb_pB_diap_min->value(), ui->sb_pB_diap_max->value() ));
-    }
-    else if( name.contains("_sY_") ) {
-        sY_graph->SetRange( QPoint(ui->sb_sY_diap_min->value(), ui->sb_sY_diap_max->value() ));
-    }
-    else if( name.contains("_fY_") ) {
-        fY_graph->SetRange( QPoint(ui->sb_fY_diap_min->value(), ui->sb_fY_diap_max->value() ));
-    }
-    else if( name.contains("_fS_") ) {
-        fS_graph->SetRange( QPoint(ui->sb_fS_diap_min->value(), ui->sb_fS_diap_max->value() ));
-    }
-}
-
-void GraphPlot::GraphStickCountSet()
-{
-    QSpinBox* sb = qobject_cast<QSpinBox*>(sender());
-    if( nullptr == sb ) {
-        return;
-    }
-
-    QString name = sb->objectName();
-    if( name.contains("_pA_") ) {
-        pA_graph->SetTickCount( sb->value() );
-    }
-    else if( name.contains("_pB_") ) {
-        pB_graph->SetTickCount( sb->value() );
-    }
-    else if( name.contains("_sY_") ) {
-        sY_graph->SetTickCount( sb->value() );
-    }
-    else if( name.contains("_fY_") ) {
-        fY_graph->SetTickCount( sb->value() );
-    }
-    else if( name.contains("_fS_") ) {
-        fS_graph->SetTickCount( sb->value() );
-    }
-}
-
-void GraphPlot::StartCylinderGraphs()
-{
-    pA_graph->Configure("Давление, бар", QPoint( ui->sb_pA_diap_min->value(),ui->sb_pA_diap_max->value()),    ui->sb_pA_discret->value());
-    pB_graph->Configure("Давление, бар", QPoint( ui->sb_pB_diap_min->value(),ui->sb_pB_diap_max->value()),    ui->sb_pB_discret->value());
-    fY_graph->Configure("Положение, %",  QPoint( ui->sb_fY_diap_min->value(),ui->sb_fY_diap_max->value()),    ui->sb_fY_discret->value());
-    sY_graph->Configure("Задание, %",    QPoint( ui->sb_sY_diap_min->value(),ui->sb_sY_diap_max->value()),    ui->sb_sY_discret->value());
-    fS_graph->Configure("Положение, мм", QPoint( ui->sb_fS_diap_min->value(),ui->sb_fS_diap_max->value()),    ui->sb_fS_discret->value());
-    ui->view_pA->setChart(pA_graph->chart);
-    ui->view_pB->setChart(pB_graph->chart);
-    ui->view_fY->setChart(fY_graph->chart);
-    ui->view_sY->setChart(sY_graph->chart);
-    ui->view_fS->setChart(fS_graph->chart);
-    ui->view_pA->setRenderHint( QPainter::Antialiasing);
-    ui->view_pB->setRenderHint( QPainter::Antialiasing);
-    ui->view_fY->setRenderHint( QPainter::Antialiasing);
-    ui->view_fS->setRenderHint( QPainter::Antialiasing);
-    ui->view_sY->setRenderHint( QPainter::Antialiasing);
-
-    connect( timer, &QTimer::timeout, this, &GraphPlot::handle_pA_pB_fY_sY );
-}
-
-void GraphPlot::StopCylinderGraphs()
-{
-    disconnect( timer, &QTimer::timeout, this, &GraphPlot::handle_pA_pB_fY_sY );
-}
 
 void GraphPlot::SetGraphPressureRight()
 {
@@ -863,179 +1049,9 @@ void GraphPlot::SensorDataUpdate(SensorPack pack)
 }
 
 
-// Утилиты для сохранения конфигов
-void GraphPlot::LoadConfigure()
+void GraphPlot::update_cylinder(plc_cylinder data)
 {
-    QFile file;
-    file.setFileName(configFile);
-    if(!file.open(QIODevice::ReadOnly | QIODevice::Text) ){
-        qDebug() << "ERROR WHEN OPENING CONFIG FILE" << configFile << file.errorString();
-    }
-    QJsonParseError err;
-    QJsonDocument src = QJsonDocument::fromJson( QString(file.readAll()).toUtf8(), &err);
-    file.close();
-
-    QJsonObject jsonParse = src.object().value( "gb_fT_L" ).toObject();
-    ui->gb_fT_L->setChecked( jsonParse.value( "isChecked" ).toBool() );
-    ui->rb_adc1_fT_L->setChecked( jsonParse.value( "isAdc1" ).toBool() );
-    ui->rb_adc3_fT_L->setChecked( jsonParse.value( "isAdc3" ).toBool() );
-    ui->cb_adc1_fT_L->setCurrentIndex( jsonParse.value( "adc1index" ).toInt() );
-    ui->cb_adc3_fT_L->setCurrentIndex( jsonParse.value( "adc3index" ).toInt() );
-    ui->chb_filt_fT_L->setChecked(jsonParse.value( "isFilter"  ).toBool() );
-
-    jsonParse = src.object().value( "gb_fT_R" ).toObject();
-    ui->gb_fT_R->setChecked( jsonParse.value( "isChecked" ).toBool() );
-    ui->rb_adc1_fT_R->setChecked( jsonParse.value( "isAdc1" ).toBool() );
-    ui->rb_adc3_fT_R->setChecked( jsonParse.value( "isAdc3" ).toBool() );
-    ui->cb_adc1_fT_R->setCurrentIndex( jsonParse.value( "adc1index" ).toInt() );
-    ui->cb_adc3_fT_R->setCurrentIndex( jsonParse.value( "adc3index" ).toInt() );
-    ui->chb_filt_fT_R->setChecked(jsonParse.value( "isFilter"  ).toBool() );
-
-    jsonParse = src.object().value( "gb_tfT_L" ).toObject();
-    ui->gb_tfT_L->setChecked( jsonParse.value( "isChecked" ).toBool() );
-    ui->rb_adc1_tfT_L->setChecked( jsonParse.value( "isAdc1" ).toBool() );
-    ui->rb_adc3_tfT_L->setChecked( jsonParse.value( "isAdc3" ).toBool() );
-    ui->cb_adc1_tfT_L->setCurrentIndex( jsonParse.value( "adc1index" ).toInt() );
-    ui->cb_adc3_tfT_L->setCurrentIndex( jsonParse.value( "adc3index" ).toInt() );
-    ui->chb_filt_tfT_L->setChecked(jsonParse.value( "isFilter"  ).toBool() );
-
-    jsonParse = src.object().value( "gb_tfT_R" ).toObject();
-    ui->gb_tfT_R->setChecked( jsonParse.value( "isChecked" ).toBool() );
-    ui->rb_adc1_tfT_R->setChecked( jsonParse.value( "isAdc1" ).toBool() );
-    ui->rb_adc3_tfT_R->setChecked( jsonParse.value( "isAdc3" ).toBool() );
-    ui->cb_adc1_tfT_R->setCurrentIndex( jsonParse.value( "adc1index" ).toInt() );
-    ui->cb_adc3_tfT_R->setCurrentIndex( jsonParse.value( "adc3index" ).toInt() );
-    ui->chb_filt_tfT_R->setChecked(jsonParse.value( "isFilter"  ).toBool() );
-
-    jsonParse = src.object().value( "pA_graph" ).toObject();
-   ui->chb_pA->setChecked(       jsonParse.value( "isChecked" ).toBool() );
-    ui->sb_pA_diap_min->setValue( jsonParse.value( "y_diap_min" ).toInt() );
-    ui->sb_pA_diap_max->setValue( jsonParse.value( "y_diap_max" ).toInt() );
-    ui->sb_pA_discret->setValue(  jsonParse.value( "y_tick" ).toInt() );
-
-    jsonParse = src.object().value( "pB_graph" ).toObject();
-   ui->chb_pB->setChecked(       jsonParse.value( "isChecked" ).toBool() );
-    ui->sb_pB_diap_min->setValue( jsonParse.value( "y_diap_min" ).toInt() );
-    ui->sb_pB_diap_max->setValue( jsonParse.value( "y_diap_max" ).toInt() );
-    ui->sb_pB_discret->setValue(  jsonParse.value( "y_tick" ).toInt() );
-
-    jsonParse = src.object().value( "sY_graph" ).toObject();
-   ui->chb_sY->setChecked(       jsonParse.value( "isChecked" ).toBool() );
-    ui->sb_sY_diap_min->setValue( jsonParse.value( "y_diap_min" ).toInt() );
-    ui->sb_sY_diap_max->setValue( jsonParse.value( "y_diap_max" ).toInt() );
-    ui->sb_sY_discret->setValue(  jsonParse.value( "y_tick" ).toInt() );
-
-    jsonParse = src.object().value( "fS_graph" ).toObject();
-   ui->chb_fS->setChecked(       jsonParse.value( "isChecked" ).toBool() );
-    ui->sb_fS_diap_min->setValue( jsonParse.value( "y_diap_min" ).toInt() );
-    ui->sb_fS_diap_max->setValue( jsonParse.value( "y_diap_max" ).toInt() );
-    ui->sb_fS_discret->setValue(  jsonParse.value( "y_tick" ).toInt() );
-
-    jsonParse = src.object().value( "fY_graph" ).toObject();
-   ui->chb_fY->setChecked(       jsonParse.value( "isChecked" ).toBool() );
-    ui->sb_fY_diap_min->setValue( jsonParse.value( "y_diap_min" ).toInt() );
-    ui->sb_fY_diap_max->setValue( jsonParse.value( "y_diap_max" ).toInt() );
-    ui->sb_fY_discret->setValue(  jsonParse.value( "y_tick" ).toInt() );
-
+    cylinders = data;
+    is_new_cylinder = true;
 }
-void GraphPlot::SaveConfigure()
-{
-    QJsonObject fT_L_conf = QJsonObject();
-    fT_L_conf.insert( "isAdc1" ,   ui->rb_adc1_fT_L->isChecked() ) ;
-    fT_L_conf.insert( "isAdc3"  ,  ui->rb_adc3_fT_L->isChecked() );
-    fT_L_conf.insert( "isFilter" , ui->chb_filt_fT_L->isChecked() );
-    fT_L_conf.insert( "adc1index", ui->cb_adc1_fT_L->currentIndex() );
-    fT_L_conf.insert( "adc3index", ui->cb_adc3_fT_L->currentIndex() );
-    fT_L_conf.insert( "isChecked", ui->gb_fT_L->isChecked());
-
-    QJsonObject fT_R_conf = QJsonObject();
-    fT_R_conf.insert( "isAdc1" ,   ui->rb_adc1_fT_R->isChecked() ) ;
-    fT_R_conf.insert( "isAdc3"  ,  ui->rb_adc3_fT_R->isChecked() );
-    fT_R_conf.insert( "isFilter" , ui->chb_filt_fT_R->isChecked() );
-    fT_R_conf.insert( "adc1index", ui->cb_adc1_fT_R->currentIndex() );
-    fT_R_conf.insert( "adc3index", ui->cb_adc3_fT_R->currentIndex() );
-    fT_R_conf.insert( "isChecked", ui->gb_fT_R->isChecked());
-
-    QJsonObject tfT_L_conf = QJsonObject();
-    tfT_L_conf.insert( "isAdc1" ,   ui->rb_adc1_tfT_L->isChecked() ) ;
-    tfT_L_conf.insert( "isAdc3"  ,  ui->rb_adc3_tfT_L->isChecked() );
-    tfT_L_conf.insert( "isFilter" , ui->chb_filt_tfT_L->isChecked() );
-    tfT_L_conf.insert( "adc1index", ui->cb_adc1_tfT_L->currentIndex() );
-    tfT_L_conf.insert( "adc3index", ui->cb_adc3_tfT_L->currentIndex() );
-    tfT_L_conf.insert( "isChecked", ui->gb_tfT_L->isChecked());
-
-    QJsonObject tfT_R_conf = QJsonObject();
-    tfT_R_conf.insert( "isAdc1" ,   ui->rb_adc1_tfT_R->isChecked() ) ;
-    tfT_R_conf.insert( "isAdc3"  ,  ui->rb_adc3_tfT_R->isChecked() );
-    tfT_R_conf.insert( "isFilter" , ui->chb_filt_tfT_R->isChecked() );
-    tfT_R_conf.insert( "adc1index", ui->cb_adc1_tfT_R->currentIndex() );
-    tfT_R_conf.insert( "adc3index", ui->cb_adc3_tfT_R->currentIndex() );
-    tfT_R_conf.insert( "isChecked", ui->gb_tfT_R->isChecked());
-
-    QJsonObject pA_graph_conf = QJsonObject();
-    pA_graph_conf.insert( "isChecked",  ui->chb_pA->isChecked() );
-    pA_graph_conf.insert( "y_diap_min", ui->sb_pA_diap_min->value() );
-    pA_graph_conf.insert( "y_diap_max", ui->sb_pA_diap_max->value()  );
-    pA_graph_conf.insert( "y_tick",     ui->sb_pA_discret->value()  );
-
-    QJsonObject pB_graph_conf = QJsonObject();
-    pB_graph_conf.insert( "isChecked", ui->chb_pB->isChecked() );
-    pB_graph_conf.insert( "y_diap_min", ui->sb_pB_diap_min->value() );
-    pB_graph_conf.insert( "y_diap_max", ui->sb_pB_diap_max->value()  );
-    pB_graph_conf.insert( "y_tick",     ui->sb_pB_discret->value()  );
-
-    QJsonObject sY_graph_conf = QJsonObject();
-    sY_graph_conf.insert( "isChecked", ui->chb_sY->isChecked() );
-    sY_graph_conf.insert( "y_diap_min", ui->sb_sY_diap_min->value() );
-    sY_graph_conf.insert( "y_diap_max", ui->sb_sY_diap_max->value()  );
-    sY_graph_conf.insert( "y_tick",     ui->sb_sY_discret->value()  );
-
-    QJsonObject fY_graph_conf = QJsonObject();
-    fY_graph_conf.insert( "isChecked", ui->chb_fY->isChecked() );
-    fY_graph_conf.insert( "y_diap_min", ui->sb_fY_diap_min->value() );
-    fY_graph_conf.insert( "y_diap_max", ui->sb_fY_diap_max->value()  );
-    fY_graph_conf.insert( "y_tick",     ui->sb_fY_discret->value()  );
-
-    QJsonObject fS_graph_conf = QJsonObject();
-    fS_graph_conf.insert( "isChecked", ui->chb_fS->isChecked() );
-    fS_graph_conf.insert( "y_diap_min", ui->sb_fS_diap_min->value() );
-    fS_graph_conf.insert( "y_diap_max", ui->sb_fS_diap_max->value()  );
-    fS_graph_conf.insert( "y_tick",     ui->sb_fS_discret->value()  );
-
-
-    QJsonObject mini_root = QJsonObject();
-    mini_root.insert( "gb_fT_L",   fT_L_conf);
-    mini_root.insert( "gb_fT_R",   fT_R_conf);
-    mini_root.insert( "gb_tfT_L",  tfT_L_conf);
-    mini_root.insert( "gb_tfT_R",  tfT_R_conf);
-    mini_root.insert( "pA_graph",  pA_graph_conf);
-    mini_root.insert( "pB_graph",  pB_graph_conf);
-    mini_root.insert( "sY_graph",  sY_graph_conf);
-    mini_root.insert( "fY_graph",  fY_graph_conf);
-    mini_root.insert( "fS_graph",  fS_graph_conf);
-
-
-    QJsonDocument doc = QJsonDocument();
-    doc.setObject(mini_root);
-    QFile file;
-    file.setFileName(configFile);
-    if(!file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate) ){
-        qDebug() << "ERROR WHEN OPENING CONFIG FILE" << configFile << file.errorString();
-    }
-    file.write(doc.toJson());
-    file.close();
-    qDebug() << "Save configure";
-}
-
-//void GraphPlot::PLC_DataUpdate(PLC_Data data)
-//{
-
-//    calc_left.InitValues(data.left);
-//    calc_right.InitValues(data.right);
-//    is_PLC_CALC_new_data = true;
-
-//    plc_Data = data;
-//    is_PLC_new_data_left = true  ;
-//    is_PLC_new_data_right = true ;
-//}
 

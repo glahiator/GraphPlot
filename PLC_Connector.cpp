@@ -10,7 +10,6 @@ PLC_Connector::PLC_Connector(quint16 _bind_port, QHostAddress _host, quint16 _se
     {
         socket->readAll();
         connect( socket, &QUdpSocket::readyRead, this, &PLC_Connector::Receive );
-
     }
     else
     {
@@ -49,6 +48,7 @@ void PLC_Connector::SendReceivedPack()
 //        data.right = right_vals;
 //        data.left = left_vals;
 //        emit plcDataReceive( data );
+        emit ready_cylinder( cylinder );
     }
 }
 

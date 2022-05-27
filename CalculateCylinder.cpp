@@ -2,11 +2,11 @@
 
 CalculateCylinder::CalculateCylinder()
 {
-    vals = CylinderVals();
+    vals = cylinder_vals1();
     isInited = false;
 }
 
-void CalculateCylinder::InitValues(CylinderVals _val)
+void CalculateCylinder::InitValues(cylinder_vals1 _val)
 {
     vals = _val;
     isInited = true;
@@ -15,7 +15,7 @@ void CalculateCylinder::InitValues(CylinderVals _val)
 double CalculateCylinder::GetStockLosses()
 {
     if( !isInited ) return 0.0;
-    double Qthr = vals.plc.VS * Ar1 * 6;
+    double Qthr = vals.plc.left.VS * Ar1 * 6;
     double Qrealr = vals.sens.fT_L / 2.07;
     double phi_r = Qrealr / Qthr;
     return phi_r * 100;
@@ -24,7 +24,7 @@ double CalculateCylinder::GetStockLosses()
 double CalculateCylinder::GetPistonLosses()
 {
     if( !isInited ) return 0.0;
-    double Qthp = vals.plc.VS * Ap1 * 6;
+    double Qthp = vals.plc.left.VS * Ap1 * 6;
     double Qrealp = vals.sens.fT_L * 2.07;
     double phi_p = Qrealp / Qthp ;
     return phi_p * 100;
@@ -36,7 +36,7 @@ double CalculateCylinder::GetForce()
     double Fthp = pS * Ap1 / 100.0;
     double Fthr = pS * Ar1 / 100.0;
     double Fth = Fthp - Fthr;
-    double Freal = ( vals.plc.pA * Ap1 * 2.07 - vals.plc.pB * Ar1) / 59.07;
+    double Freal = ( vals.plc.left.pA * Ap1 * 2.07 - vals.plc.left.pB * Ar1) / 59.07;
     double ntetta = Fth / Freal;
     return ntetta;
 }

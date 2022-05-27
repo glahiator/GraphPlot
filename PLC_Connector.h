@@ -16,8 +16,8 @@
 
 #include "Utilites.h"
 
-struct PLCvals {
-    PLCvals() {
+struct cylinder_vals {
+    cylinder_vals() {
         pA = 0.0;
         pB = 0.0;
         sY = 0.0;
@@ -31,7 +31,11 @@ struct PLCvals {
     double fY; // Обратная связь положения золотника проп. клапана  цилиндра
     double fS; // Обратная связь положения штока  цилиндра
     double VS; // Обратная связь скорости штока  цилиндра (найти производную от fS)
+};
 
+struct plc_cylinder {
+    cylinder_vals left;
+    cylinder_vals right;
 };
 
 class PLC_Connector : public QObject
@@ -40,21 +44,21 @@ class PLC_Connector : public QObject
 public:
     explicit PLC_Connector(quint16 _bind_port, QHostAddress _host, quint16 _send_port = 8888, QObject *parent = nullptr);
     ~PLC_Connector();
-    void Receive();
-    void SendReceivedPack();
-
-    QTimer * timer;
-//    TS7Client *Client;
 
 private:
+    void Receive();
+    void SendReceivedPack();
     quint16 bind_port;
     QHostAddress host;
     quint16 send_port;
     QUdpSocket * socket;
     qint64 previousTime;
+    plc_cylinder cylinder;
+    QTimer * timer;
+//    TS7Client *Client;
 
 signals:
-//    void plcDataReceive(PLC_Data pack);
+    void ready_cylinder(plc_cylinder pack);
 };
 
 #endif // PLC_CONNECTOR_H

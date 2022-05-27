@@ -50,9 +50,9 @@ public:
     void handleCalcTabPlot();
 
     // left tab graphs
-    void TabGraphShowingLeft();
-    void GraphDiapSet();
-    void GraphStickCountSet();
+    void SetCylinderGraphsShow();
+    void SetGraphDiap();
+    void SetGraphStickCount();
     void StartCylinderGraphs();
     void StopCylinderGraphs();
     // right tab graphs
@@ -69,7 +69,7 @@ public:
     void SetGraphPistonLoss();
 
     void SensorDataUpdate( SensorPack pack );
-//    void PLC_DataUpdate( PLC_Data data );
+    void update_cylinder(plc_cylinder data );
 
     // утилиты для конфигурации
     void LoadConfigure();
@@ -142,7 +142,6 @@ private:
     QDateTime timeDiffForce;
 
     bool is_PLC_CALC_new_data;
-//    PLC_Data plc_Data;
 
     bool is_PLC_new_data_left;
     bool is_PLC_new_data_right;
@@ -151,9 +150,15 @@ private:
     double prev_y;
     bool is_Check;
 
-    bool is_new_sensor;
 
     bool is_new_force;
+
+    bool is_new_sensor;
+    bool is_new_cylinder;
+
+    bool isDemo_pA_pB_fY_sY;
+
     SensorVals sens_data;
+    plc_cylinder cylinders;
 };
 #endif // GRAPHPLOT_H
