@@ -888,26 +888,6 @@
         <string>Диагностика цилиндров</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_4">
-        <item row="2" column="0">
-         <widget class="QChartView" name="view_pA">
-          <property name="minimumSize">
-           <size>
-            <width>230</width>
-            <height>230</height>
-           </size>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="0">
-         <widget class="QChartView" name="view_fY">
-          <property name="minimumSize">
-           <size>
-            <width>230</width>
-            <height>230</height>
-           </size>
-          </property>
-         </widget>
-        </item>
         <item row="1" column="0">
          <widget class="QChartView" name="view_fS">
           <property name="minimumSize">
@@ -920,6 +900,26 @@
         </item>
         <item row="3" column="1">
          <widget class="QChartView" name="view_sY">
+          <property name="minimumSize">
+           <size>
+            <width>230</width>
+            <height>230</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QChartView" name="view_pA">
+          <property name="minimumSize">
+           <size>
+            <width>230</width>
+            <height>230</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <widget class="QChartView" name="view_fY">
           <property name="minimumSize">
            <size>
             <width>230</width>
@@ -974,7 +974,7 @@
               <x>10</x>
               <y>10</y>
               <width>521</width>
-              <height>151</height>
+              <height>170</height>
              </rect>
             </property>
             <layout class="QFormLayout" name="formLayout_3">
@@ -5042,8 +5042,8 @@
            <widget class="QWidget" name="layoutWidget">
             <property name="geometry">
              <rect>
-              <x>550</x>
-              <y>21</y>
+              <x>540</x>
+              <y>10</y>
               <width>111</width>
               <height>101</height>
              </rect>
@@ -5059,6 +5059,9 @@
                </property>
                <property name="layoutDirection">
                 <enum>Qt::LeftToRight</enum>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">text-align:left;</string>
                </property>
                <property name="text">
                 <string>Начать</string>
@@ -5086,6 +5089,9 @@
                <property name="layoutDirection">
                 <enum>Qt::LeftToRight</enum>
                </property>
+               <property name="styleSheet">
+                <string notr="true">text-align:left;</string>
+               </property>
                <property name="text">
                 <string>Прервать</string>
                </property>
@@ -5111,6 +5117,9 @@
                </property>
                <property name="layoutDirection">
                 <enum>Qt::LeftToRight</enum>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">text-align:left;</string>
                </property>
                <property name="text">
                 <string>Сохранить</string>
