@@ -34,47 +34,56 @@ public:
     GraphPlot(QWidget *parent = nullptr);
     ~GraphPlot();
 
+    UniqueGraph * fT_graph;
+    UniqueGraph * tfT_graph;
+
+    UniqueGraph * pA_graph;
+    UniqueGraph * pB_graph;
     UniqueGraph * sY_graph;
     UniqueGraph * fY_graph;
     UniqueGraph * fS_graph;
 
-    UniqueGraph * fT_graph;
-    UniqueGraph * tfT_graph;
+    UniqueGraph * pP_graph;
+    UniqueGraph * fD_graph;
+    UniqueGraph * tfD_graph;
+    UniqueGraph * tfdS_graph;
+    UniqueGraph * CAN_graph;
+
     void handle_fT_tfT();
-
-    UniqueGraph * pA_graph;
-    UniqueGraph * pB_graph;
     void handle_pA_pB_fY_sY();
+    void handle_pP_fD_tfD_tfdS();
 
-    void handleRightTabPlot();
-    void handleCalcTabPlot();
-
-    // left tab graphs
-    void SetCylinderGraphsShow();
+    // graphs setters
+    void SetGraphsShow();
     void SetGraphDiap();
     void SetGraphStickCount();
+
+    // timer starters
     void StartCylinderGraphs();
     void StopCylinderGraphs();
-    // right tab graphs
-    void SetGraphPressureRight();
-    void SetGraphZadanRight();
-    void SetGraphZolotPositionRight();
-    void SetGraphShtokPositionRight();
-    void TabGraphShowingRight();
-    void TabGraphShowingCalc();
 
-    // calc tab
-    void SetGraphDiffForce();
-    void SetGraphStockLoss();
-    void SetGraphPistonLoss();
-
-    void SensorDataUpdate( SensorPack pack );
-    void update_cylinder(plc_cylinder data );
+    void StartPumpGraphs();
+    void StopPumpGraphs();
 
     // утилиты для конфигурации
     void LoadConfigure();
     void SaveConfigure();
 
+    // receive slots
+    void SensorDataUpdate( SensorPack pack );
+    void update_cylinder(plc_cylinder data );
+
+
+
+
+
+
+    void handleCalcTabPlot();
+    void TabGraphShowingCalc();
+    // calc tab
+    void SetGraphDiffForce();
+    void SetGraphStockLoss();
+    void SetGraphPistonLoss();
 private Q_SLOTS:
     void updateUI();
 
@@ -90,35 +99,8 @@ private:
 
     int counter;
     bool switcher;
-    bool isDemo_fT_tfT;
 
-    void SetDemo();
-
-    QLineSeries *ser_right_piston_pressure;
-    QLineSeries *ser_right_rod_pressure;
-    QDateTimeAxis *ax_X_RightPressure;
-    QValueAxis *ax_Y_RightPressure;
-    QChart *chartRightPressure;
-    QDateTime timeRightPressure;
-
-    QValueAxis *ax_Y_RightZadan;
-    QDateTimeAxis *ax_X_RightZadan;
-    QLineSeries *ser_right_zadan;
-    QDateTime timeRightZadan;
-    QChart * chartRightZadan;
-
-    QValueAxis *ax_Y_RightShtokPosit;
-    QDateTimeAxis *ax_X_RightShtokPosit;
-    QLineSeries *ser_right_ShtokPosit;
-    QDateTime timeRightShtokPosit;
-    QChart * chartRightShtokPosit;
-
-    QValueAxis *ax_Y_RightZolotPosit;
-    QDateTimeAxis *ax_X_RightZolotPosit;
-    QLineSeries *ser_right_ZolotPosit;
-    QDateTime timeRightZolotPosit;
-    QChart * chartRightZolotPosit;
-
+    void SetDemo();   
 
     QLineSeries *ser_piston_loss_right;
     QLineSeries *ser_piston_loss_left;
@@ -142,23 +124,23 @@ private:
     QDateTime timeDiffForce;
 
     bool is_PLC_CALC_new_data;
-
     bool is_PLC_new_data_left;
     bool is_PLC_new_data_right;
-
     double prev_x;
     double prev_y;
     bool is_Check;
-
-
     bool is_new_force;
 
     bool is_new_sensor;
     bool is_new_cylinder;
+    bool is_new_pump;
 
+    bool isDemo_fT_tfT;
     bool isDemo_pA_pB_fY_sY;
+    bool isDemo_pP_fD_tfD_tfdS;
 
     SensorVals sens_data;
     plc_cylinder cylinders;
+    plc_pump pumps;
 };
 #endif // GRAPHPLOT_H

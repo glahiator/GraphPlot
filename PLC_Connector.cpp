@@ -49,6 +49,7 @@ void PLC_Connector::SendReceivedPack()
 //        data.left = left_vals;
 //        emit plcDataReceive( data );
         emit ready_cylinder( cylinder );
+        emit ready_pump( pump );
     }
 }
 

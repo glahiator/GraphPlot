@@ -9,6 +9,8 @@ UniqueGraph::UniqueGraph(QString _title, QObject *parent) : QObject(parent)
 void UniqueGraph::Configure(QString _yAxisText , QPoint _yRange, int _yTickCount)
 {
     QDateTime all(QDateTime::currentDateTime().date(), QDateTime::currentDateTime().time().addSecs(-10));
+
+
     time =  all;
     yAxisText = _yAxisText;
     series_left = new QLineSeries();
@@ -48,7 +50,8 @@ void UniqueGraph::Configure(QString _yAxisText , QPoint _yRange, int _yTickCount
     series_right->attachAxis( axis_X );
     series_right->attachAxis( axis_Y );
 
-    axis_X->setRange(temp_time, time.addSecs(1));
+//    axis_X->setRange(temp_time, time.addSecs(1));
+    axis_X->setRange(temp_time, time);
 //    axis_Y->setRange(0, 100);
 //    axis_Y->setRange(_yRange.x(), _yRange.y());
     SetRange( _yRange );
@@ -57,6 +60,8 @@ void UniqueGraph::Configure(QString _yAxisText , QPoint _yRange, int _yTickCount
 //    axis_Y->setTickCount(11);
 //    axis_Y->setTickCount(_yTickCount);
     SetTickCount(_yTickCount);
+//    qDebug() << title<< axis_X->max().toMSecsSinceEpoch()  <<  axis_X->min().toMSecsSinceEpoch();
+
     chart->setTitle(title);
 }
 
@@ -86,6 +91,6 @@ void UniqueGraph::ChartScroll(qreal plotWidth)
 {
     qreal x_sens_fT = plotWidth / axis_X->tickCount();
     qreal y_sens_fT = (axis_X->max().toMSecsSinceEpoch() - axis_X->min().toMSecsSinceEpoch()) / axis_X->tickCount();
-    time = time.addMSecs(y_sens_fT);
+    time = time.addMSecs( 1000 );
     chart->scroll(x_sens_fT, 0);
 }

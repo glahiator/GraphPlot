@@ -7,7 +7,7 @@
     },
     "fY_graph": {
         "isChecked": true,
-        "y_diap_max": 100,
+        "y_diap_max": 84,
         "y_diap_min": -100,
         "y_tick": 6
     },
@@ -51,14 +51,14 @@
     },
     "pB_graph": {
         "isChecked": true,
-        "y_diap_max": 250,
+        "y_diap_max": 82,
         "y_diap_min": 0,
         "y_tick": 6
     },
     "sY_graph": {
         "isChecked": true,
-        "y_diap_max": 100,
-        "y_diap_min": -100,
+        "y_diap_max": 36,
+        "y_diap_min": 16,
         "y_tick": 6
     }
 }
