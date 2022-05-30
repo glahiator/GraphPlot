@@ -1,7 +1,7 @@
 #ifndef CALCULATECYLINDER_H
 #define CALCULATECYLINDER_H
 
-#include "PLC_Connector.h"
+#include "PLC.h"
 #include "Sensor.h"
 
 const double Dp1 = 125.0; //Диаметр поршня первого левого цилиндра
@@ -19,11 +19,11 @@ const double Ar2 = 59.07; // Площадь штоковой полости пр
 
 struct cylinder_vals1 {
     cylinder_vals1() {
-        sens = SensorVals();
-        plc = plc_cylinder();
+        sens = sensor_vals();
+        plc = cyldr_vals();
     }
-    SensorVals sens;
-    plc_cylinder plc;
+    sensor_vals sens;
+    cyldr_vals plc;
 };
 
 class CalculateCylinder

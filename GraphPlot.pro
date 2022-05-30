@@ -11,21 +11,21 @@ CONFIG += c++14
 SOURCES += \
     CalculateCylinder.cpp \
     Graphs/UniqueGraph.cpp \
-    PLC_Connector.cpp \
+    PLC.cpp \
     Sensor.cpp \
     Utilites.cpp \
     main.cpp \
-    GraphPlot.cpp \
-#    snap7.cpp
+    GraphPlot.cpp
+ #    snap7.cpp
 
 HEADERS += \
     CalculateCylinder.h \
     GraphPlot.h \
     Graphs/UniqueGraph.h \
-    PLC_Connector.h \
+    PLC.h \
     Sensor.h \
-    Utilites.h \
-#    snap7.h
+    Utilites.h
+ #    snap7.h
 
 FORMS += \
     GraphPlot.ui

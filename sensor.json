@@ -7,12 +7,12 @@
     },
     "fY_graph": {
         "isChecked": true,
-        "y_diap_max": 84,
+        "y_diap_max": 100,
         "y_diap_min": -100,
         "y_tick": 6
     },
     "gb_fT_L": {
-        "adc1index": 7,
+        "adc1index": 6,
         "adc3index": 2,
         "isAdc1": true,
         "isAdc3": false,
@@ -22,26 +22,26 @@
     "gb_fT_R": {
         "adc1index": 8,
         "adc3index": 7,
-        "isAdc1": false,
-        "isAdc3": true,
+        "isAdc1": true,
+        "isAdc3": false,
         "isChecked": true,
-        "isFilter": false
+        "isFilter": true
     },
     "gb_tfT_L": {
         "adc1index": 3,
         "adc3index": 3,
-        "isAdc1": true,
-        "isAdc3": false,
+        "isAdc1": false,
+        "isAdc3": true,
         "isChecked": true,
-        "isFilter": false
+        "isFilter": true
     },
     "gb_tfT_R": {
         "adc1index": 4,
         "adc3index": 4,
-        "isAdc1": true,
-        "isAdc3": false,
+        "isAdc1": false,
+        "isAdc3": true,
         "isChecked": true,
-        "isFilter": false
+        "isFilter": true
     },
     "pA_graph": {
         "isChecked": true,
@@ -58,7 +58,7 @@
     "sY_graph": {
         "isChecked": true,
         "y_diap_max": 36,
-        "y_diap_min": 16,
-        "y_tick": 6
+        "y_diap_min": -44,
+        "y_tick": 7
     }
 }

@@ -15,11 +15,11 @@
 #include <QMap>
 
 #include "Sensor.h"
-#include "PLC_Connector.h"
+#include "PLC.h"
 #include "CalculateCylinder.h"
 #include "Graphs/UniqueGraph.h"
 
-const QString configFile = "../sensor.json";
+const QString configFile = QString("../sensor.json");
 
 
 QT_BEGIN_NAMESPACE
@@ -36,6 +36,9 @@ public:
 
     UniqueGraph * fT_graph;
     UniqueGraph * tfT_graph;
+    UniqueGraph * fiR_graph;
+    UniqueGraph * fiP_graph;
+    UniqueGraph * nN_graph;
 
     UniqueGraph * pA_graph;
     UniqueGraph * pB_graph;
@@ -50,7 +53,8 @@ public:
     UniqueGraph * CAN_graph;
 
     void handle_fT_tfT();
-    void handle_pA_pB_fY_sY();
+    void handle_fiR_fiP_nN();
+    void handle_pA_pB_fY_sY_fS();
     void handle_pP_fD_tfD_tfdS();
 
     // graphs setters
@@ -65,25 +69,20 @@ public:
     void StartPumpGraphs();
     void StopPumpGraphs();
 
+    void StartSensorGraphs();
+    void StopSensorGraphs();
+
+    void StartCalcGraphs();
+    void StopCalcGraphs();
+
     // утилиты для конфигурации
     void LoadConfigure();
     void SaveConfigure();
 
     // receive slots
-    void SensorDataUpdate( SensorPack pack );
-    void update_cylinder(plc_cylinder data );
+    void update_sensor( sensor_pack pack );
+    void update_plc( plc_pack data );
 
-
-
-
-
-
-    void handleCalcTabPlot();
-    void TabGraphShowingCalc();
-    // calc tab
-    void SetGraphDiffForce();
-    void SetGraphStockLoss();
-    void SetGraphPistonLoss();
 private Q_SLOTS:
     void updateUI();
 
@@ -92,55 +91,22 @@ private:
     QTimer * timer;
 
     Sensor * sensor;
-    PLC_Connector * plc;
+    PLC * siemens;
 
     CalculateCylinder calc_right;
     CalculateCylinder calc_left;
-
-    int counter;
-    bool switcher;
-
-    void SetDemo();   
-
-    QLineSeries *ser_piston_loss_right;
-    QLineSeries *ser_piston_loss_left;
-    QDateTimeAxis *ax_X_PistonLoss;
-    QValueAxis *ax_Y_PistonLoss;
-    QChart *chartPistonLoss;
-    QDateTime timePistonLoss;
-
-    QLineSeries *ser_Stock_loss_right;
-    QLineSeries *ser_Stock_loss_left;
-    QDateTimeAxis *ax_X_StockLoss;
-    QValueAxis *ax_Y_StockLoss;
-    QChart *chartStockLoss;
-    QDateTime timeStockLoss;
-
-    QLineSeries *ser_Diff_Force_right;
-    QLineSeries *ser_Diff_Force_left;
-    QDateTimeAxis *ax_X_DiffForce;
-    QValueAxis *ax_Y_DiffForce;
-    QChart *chartDiffForce;
-    QDateTime timeDiffForce;
-
-    bool is_PLC_CALC_new_data;
-    bool is_PLC_new_data_left;
-    bool is_PLC_new_data_right;
-    double prev_x;
-    double prev_y;
-    bool is_Check;
-    bool is_new_force;
 
     bool is_new_sensor;
     bool is_new_cylinder;
     bool is_new_pump;
 
     bool isDemo_fT_tfT;
+    bool isDemo_fiR_fiP_nN;
     bool isDemo_pA_pB_fY_sY;
     bool isDemo_pP_fD_tfD_tfdS;
 
-    SensorVals sens_data;
-    plc_cylinder cylinders;
-    plc_pump pumps;
+    sensor_vals sens_data;
+    cyldr_vals cylinders;
+    pump_vals pumps;
 };
 #endif // GRAPHPLOT_H

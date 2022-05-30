@@ -6,30 +6,21 @@ GraphPlot::GraphPlot(QWidget *parent)
     , ui(new Ui::GraphPlot)
 {
     ui->setupUi(this);
-    sens_data = SensorVals();
-    cylinders = plc_cylinder();
-    pumps = plc_pump();
 
     LoadConfigure();
     ui->btn_cylinder_stop->setEnabled(false);
+    ui->btn_sensor_stop->setEnabled(false);
     ui->btn_pump_stop->setEnabled(false);
-
-    counter = 0;
-    switcher = false;
-    is_Check = false;
+    ui->btn_calc_stop->setEnabled(false);
 
     isDemo_fT_tfT = false;
+    isDemo_fiR_fiP_nN = false;
     isDemo_pA_pB_fY_sY = false;
     isDemo_pP_fD_tfD_tfdS = false;
 
     is_new_cylinder = false;
     is_new_pump = false;
     is_new_sensor = false;
-    is_new_force = false;
-
-    is_PLC_CALC_new_data = false;
-    is_PLC_new_data_left = false;
-    is_PLC_new_data_right = false;
 
     pA_graph = new UniqueGraph( "Давление в поршневой полости", this);
     pB_graph = new UniqueGraph( "Давление в штоковой полости", this);
@@ -37,47 +28,22 @@ GraphPlot::GraphPlot(QWidget *parent)
     fY_graph = new UniqueGraph( "Обратная связь положения золотника проп. клапана", this);
     fS_graph = new UniqueGraph( "Обратная связь положения штока", this);
 
-    connect( ui->btn_cylinder_start, &QPushButton::clicked, this, &GraphPlot::StartCylinderGraphs );
-    connect( ui->btn_cylinder_stop,  &QPushButton::clicked, this, &GraphPlot::StopCylinderGraphs );
-    connect( ui->chb_demo_cylinders, &QCheckBox::clicked, this, [=]{
-        isDemo_pA_pB_fY_sY = ui->chb_demo_cylinders->isChecked();
-    });
-
     pP_graph   = new UniqueGraph( "Давление в напорной линии", this);
     fD_graph   = new UniqueGraph( "Объемный расход в дренаже", this);
     tfD_graph  = new UniqueGraph( "Температура расхода дренажа", this);
     tfdS_graph = new UniqueGraph( "Положение шайбы", this);
     CAN_graph  = new UniqueGraph( "Уровень загрязнения рабочей жидкости", this);
-    connect( ui->btn_pump_start, &QPushButton::clicked, this, &GraphPlot::StartPumpGraphs );
-    connect( ui->btn_pump_stop,  &QPushButton::clicked, this, &GraphPlot::StopPumpGraphs );
-    connect( ui->chb_demo_pump, &QCheckBox::clicked, this, [=]{
-        isDemo_pP_fD_tfD_tfdS = ui->chb_demo_pump->isChecked();
-    });
 
     fT_graph  = new UniqueGraph( "Объемный расход", this);
     tfT_graph = new UniqueGraph( "Температура расхода", this);
-    fT_graph->Configure( "Расход, л/мин",    QPoint(0,100), 11);
-    tfT_graph->Configure("Температура, град",QPoint(0,100), 11);
-    ui->view_fT->setChart(   fT_graph->chart);
-    ui->view_tfT->setChart( tfT_graph->chart );
-    ui->view_fT->setRenderHint( QPainter::Antialiasing);
-    ui->view_tfT->setRenderHint(QPainter::Antialiasing);
-
+    fiR_graph = new UniqueGraph( "Процент потерь расхода в штоковой полости", this);
+    fiP_graph = new UniqueGraph( "Процент потерь расхода в поршневой полости", this);
+    nN_graph  = new UniqueGraph( "Отношение эталонного дифф. усилия к реальному", this);
 
     sensor = new Sensor(2607, QHostAddress("192.168.1.20"), 8888, this);
-    connect( sensor, &Sensor::sensorPackReceive, this, &GraphPlot::SensorDataUpdate );
-
-    plc = new PLC_Connector(2688, QHostAddress("192.168.1.31"), 8888, this);
-    connect( plc, &PLC_Connector::ready_cylinder, this, &GraphPlot::update_cylinder );
-
-    QDateTime all(QDateTime::currentDateTime().date(), QDateTime::currentDateTime().time().addSecs(-10));
-
-    timePistonLoss = timeStockLoss = timeDiffForce = all;
-
-
-    SetGraphPistonLoss();
-    SetGraphStockLoss();
-    SetGraphDiffForce();
+    siemens = new PLC(  2688, QHostAddress("192.168.1.31"), 8888, this);
+    connect( sensor,  &Sensor::ready_sensor, this, &GraphPlot::update_sensor );
+    connect( siemens, &PLC::ready_plc,       this, &GraphPlot::update_plc );
 
     connect( ui->sb_pA_diap_max, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphDiap );
     connect( ui->sb_pA_diap_min, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphDiap );
@@ -90,6 +56,17 @@ GraphPlot::GraphPlot(QWidget *parent)
     connect( ui->sb_fS_diap_max, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphDiap );
     connect( ui->sb_fS_diap_min, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphDiap );
 
+    connect( ui->sb_fT_diap_max, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphDiap );
+    connect( ui->sb_fT_diap_min, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphDiap );
+    connect( ui->sb_tfT_diap_max, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphDiap );
+    connect( ui->sb_tfT_diap_min, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphDiap );
+    connect( ui->sb_nN_diap_max, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphDiap );
+    connect( ui->sb_nN_diap_min, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphDiap );
+    connect( ui->sb_fiR_diap_max, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphDiap );
+    connect( ui->sb_fiR_diap_min, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphDiap );
+    connect( ui->sb_fiP_diap_max, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphDiap );
+    connect( ui->sb_fiP_diap_min, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphDiap );
+
     connect( ui->sb_pP_diap_max,   QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphDiap );
     connect( ui->sb_pP_diap_min,   QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphDiap );
     connect( ui->sb_fD_diap_max,   QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphDiap );
@@ -101,11 +78,16 @@ GraphPlot::GraphPlot(QWidget *parent)
     connect( ui->sb_CAN_diap_max,  QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphDiap );
     connect( ui->sb_CAN_diap_min,  QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphDiap );
 
-    connect( ui->sb_pA_discret,   QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphStickCount );
-    connect( ui->sb_pB_discret,   QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphStickCount );
-    connect( ui->sb_sY_discret,  QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphStickCount );
+    connect( ui->sb_pA_discret, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphStickCount );
+    connect( ui->sb_pB_discret, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphStickCount );
+    connect( ui->sb_sY_discret, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphStickCount );
     connect( ui->sb_fY_discret, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphStickCount );
-    connect( ui->sb_fS_discret,  QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphStickCount );
+    connect( ui->sb_fS_discret, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphStickCount );
+    connect( ui->sb_fT_discret, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphStickCount );
+    connect( ui->sb_tfT_discret, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphStickCount );
+    connect( ui->sb_fiR_discret, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphStickCount );
+    connect( ui->sb_fiP_discret, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphStickCount );
+    connect( ui->sb_nN_discret, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphStickCount );
 
     connect( ui->sb_pP_discret,   QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphStickCount );
     connect( ui->sb_fD_discret,   QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphStickCount );
@@ -119,6 +101,11 @@ GraphPlot::GraphPlot(QWidget *parent)
     connect( ui->chb_fY, &QCheckBox::clicked, this, &GraphPlot::SetGraphsShow );
     connect( ui->chb_sY, &QCheckBox::clicked, this, &GraphPlot::SetGraphsShow );
     connect( ui->chb_fS, &QCheckBox::clicked, this, &GraphPlot::SetGraphsShow );
+    connect( ui->chb_fT, &QGroupBox::clicked, this, &GraphPlot::SetGraphsShow );
+    connect( ui->chb_tfT,&QGroupBox::clicked, this, &GraphPlot::SetGraphsShow );
+    connect( ui->chb_fiR, &QCheckBox::clicked, this, &GraphPlot::SetGraphsShow );
+    connect( ui->chb_fiP, &QCheckBox::clicked, this, &GraphPlot::SetGraphsShow );
+    connect( ui->chb_nN,  &QCheckBox::clicked, this, &GraphPlot::SetGraphsShow );
 
     connect( ui->chb_pP,   &QCheckBox::clicked, this, &GraphPlot::SetGraphsShow );
     connect( ui->chb_fD,   &QCheckBox::clicked, this, &GraphPlot::SetGraphsShow );
@@ -126,12 +113,26 @@ GraphPlot::GraphPlot(QWidget *parent)
     connect( ui->chb_tfdS, &QCheckBox::clicked, this, &GraphPlot::SetGraphsShow );
     connect( ui->chb_CAN,  &QCheckBox::clicked, this, &GraphPlot::SetGraphsShow );
 
-
-    connect( ui->cb_calc_tab_diff_force,  &QCheckBox::clicked, this, &GraphPlot::TabGraphShowingCalc );
-    connect( ui->cb_calc_tab_piston_loss,  &QCheckBox::clicked, this, &GraphPlot::TabGraphShowingCalc );
-    connect( ui->cb_calc_tab_stock_loss,  &QCheckBox::clicked, this, &GraphPlot::TabGraphShowingCalc );
-
-    connect( ui->act_demo, &QAction::toggled, this, &GraphPlot::SetDemo);
+    connect( ui->btn_cylinder_start, &QPushButton::clicked, this, &GraphPlot::StartCylinderGraphs );
+    connect( ui->btn_cylinder_stop,  &QPushButton::clicked, this, &GraphPlot::StopCylinderGraphs );
+    connect( ui->btn_pump_start, &QPushButton::clicked, this, &GraphPlot::StartPumpGraphs );
+    connect( ui->btn_pump_stop,  &QPushButton::clicked, this, &GraphPlot::StopPumpGraphs );
+    connect( ui->btn_sensor_start, &QPushButton::clicked, this, &GraphPlot::StartSensorGraphs );
+    connect( ui->btn_sensor_stop,  &QPushButton::clicked, this, &GraphPlot::StopSensorGraphs );
+    connect( ui->btn_calc_start, &QPushButton::clicked, this, &GraphPlot::StartCalcGraphs );
+    connect( ui->btn_calc_stop,  &QPushButton::clicked, this, &GraphPlot::StopCalcGraphs );
+    connect( ui->chb_demo_cylinders, &QCheckBox::clicked, this, [=]{
+        isDemo_pA_pB_fY_sY = ui->chb_demo_cylinders->isChecked();
+    });
+    connect( ui->chb_demo_pump, &QCheckBox::clicked, this, [=]{
+        isDemo_pP_fD_tfD_tfdS = ui->chb_demo_pump->isChecked();
+    });
+    connect( ui->chb_demo_sensor, &QCheckBox::clicked, this, [=]{
+        isDemo_fT_tfT = ui->chb_demo_sensor->isChecked();
+    });
+    connect( ui->chb_demo_calc, &QCheckBox::clicked, this, [=]{
+        isDemo_fiR_fiP_nN = ui->chb_demo_calc->isChecked();
+    });
 
 
 //    ui->themeComboBox->addItem("Light", QChart::ChartThemeLight);
@@ -156,12 +157,6 @@ GraphPlot::GraphPlot(QWidget *parent)
     timer = new QTimer();
     timer->stop();
     timer->setInterval(1000);
-    connect( timer, &QTimer::timeout, this, &GraphPlot::handle_fT_tfT );
-
-
-//    connect( timer, &QTimer::timeout, this, &GraphPlot::handleForcePlot );
-//    connect( timer, &QTimer::timeout, this, &GraphPlot::handleRightTabPlot );
-    connect( timer, &QTimer::timeout, this, &GraphPlot::handleCalcTabPlot );
     timer->start();
 }
 
@@ -169,7 +164,7 @@ GraphPlot::~GraphPlot()
 {
     SaveConfigure();
     delete sensor;
-    delete plc;
+    delete siemens;
     delete timer;
     delete ui;
 }
@@ -221,13 +216,6 @@ void GraphPlot::updateUI()
 //    pal.setColor(QPalette::WindowText, QRgb(0x404044));
     window()->setPalette(pal);
 }
-
-void GraphPlot::SetDemo()
-{
-    isDemo_fT_tfT = ui->act_demo->isChecked();
-}
-
-
 
 // Утилиты для сохранения конфигов
 void GraphPlot::LoadConfigure()
@@ -414,7 +402,41 @@ void GraphPlot::handle_fT_tfT()
     fT_graph->ChartScroll(  ui->view_fT->chart()->plotArea().width()  );
     tfT_graph->ChartScroll( ui->view_tfT->chart()->plotArea().width() );
 }
-void GraphPlot::handle_pA_pB_fY_sY()
+void GraphPlot::handle_fiR_fiP_nN()
+{
+    double fiR_r, fiR_l, fiP_r,fiP_l , nN_r , nN_l = 0.0;
+    if( isDemo_fiR_fiP_nN ) {
+        fiR_r  = QRandomGenerator::global()->bounded(0,10);
+        fiR_l  = QRandomGenerator::global()->bounded(0,10);
+        fiP_r = QRandomGenerator::global()->bounded(0,5);
+        fiP_l = QRandomGenerator::global()->bounded(0,5);
+        nN_r  = QRandomGenerator::global()->bounded(0,10);
+        nN_l = QRandomGenerator::global()->bounded(0,5);
+    }
+
+    if( !ui->btn_fiR_lc->isChecked() ) ui->btn_fiR_lc->setText(QString::number( fiR_l + 0.11 ,'f', 2 ) );
+    if( !ui->btn_fiR_rc->isChecked() ) ui->btn_fiR_rc->setText(QString::number( fiR_r - 0.22,'f', 2 ) );
+
+    if( !ui->btn_fiP_lc->isChecked() ) ui->btn_fiP_lc->setText(QString::number( fiP_l * 1.1 ,'f', 2 ) );
+    if( !ui->btn_fiP_rc->isChecked() ) ui->btn_fiP_rc->setText(QString::number( fiP_r * 0.9,'f', 2 ) );
+
+    if( !ui->btn_nN_lc->isChecked() ) ui->btn_nN_lc->setText(QString::number( nN_r * 1.2 ,'f', 2 ) );
+    if( !ui->btn_nN_rc->isChecked() ) ui->btn_nN_rc->setText(QString::number( nN_l * 1.3,'f', 2 ) );
+
+    fiR_graph->ChartIncrement_if( !ui->btn_fiR_lc->isChecked(),  fiR_l,
+                                 !ui->btn_fiR_rc->isChecked(),   fiR_r);
+
+    fiP_graph->ChartIncrement_if( !ui->btn_fiP_lc->isChecked(),  fiP_l,
+                                 !ui->btn_fiP_rc->isChecked(),   fiP_r);
+
+    nN_graph->ChartIncrement_if( !ui->btn_nN_lc->isChecked(),  nN_l,
+                                 !ui->btn_nN_rc->isChecked(),  nN_r);
+
+    fiR_graph->ChartScroll( ui->view_fiR->chart()->plotArea().width()  );
+    fiP_graph->ChartScroll( ui->view_fiP->chart()->plotArea().width() );
+    nN_graph->ChartScroll( ui->view_nN->chart()->plotArea().width() );
+}
+void GraphPlot::handle_pA_pB_fY_sY_fS()
 {
     if( isDemo_pA_pB_fY_sY && !is_new_cylinder ) {
         cylinders.left.pA = QRandomGenerator::global()->bounded(40) - 0.45;
@@ -493,25 +515,25 @@ void GraphPlot::handle_pP_fD_tfD_tfdS()
         if( !ui->btn_tfD_lc->isChecked() ) ui->btn_tfD_lc->setText(QString::number( pumps.left.tfD ,'f', 2 ) );
         if( !ui->btn_tfD_rc->isChecked() ) ui->btn_tfD_rc->setText(QString::number( pumps.right.tfD,'f', 2 ) );
 
-        if( !ui->btn_tfdS_lc->isChecked() ) ui->btn_tfdS_lc->setText(QString::number(  pumps.left.tfdS ,'f', 2 ) );
+        if( !ui->btn_tfdS_lc->isChecked() ) ui->btn_tfdS_lc->setText(QString::number( pumps.left.tfdS ,'f', 2 ) );
         if( !ui->btn_tfdS_rc->isChecked() ) ui->btn_tfdS_rc->setText(QString::number( pumps.right.tfdS,'f', 2 ) );
 
-        if( !ui->btn_CAN_lc->isChecked() ) ui->btn_CAN_lc->setText(QString::number(  pumps.left.CAN ,'f', 2 ) );
+        if( !ui->btn_CAN_lc->isChecked() ) ui->btn_CAN_lc->setText(QString::number( pumps.left.CAN ,'f', 2 ) );
         if( !ui->btn_CAN_rc->isChecked() ) ui->btn_CAN_rc->setText(QString::number( pumps.right.CAN,'f', 2 ) );
 
-        pP_graph->ChartIncrement_if( !ui->btn_pP_lc->isChecked(),  pumps.left.pP,
+        pP_graph->ChartIncrement_if( !ui->btn_pP_lc->isChecked(), pumps.left.pP,
                                      !ui->btn_pP_rc->isChecked(), pumps.right.pP);
 
-        fD_graph->ChartIncrement_if( !ui->btn_fD_lc->isChecked(),  pumps.left.fD,
+        fD_graph->ChartIncrement_if( !ui->btn_fD_lc->isChecked(), pumps.left.fD,
                                      !ui->btn_fD_rc->isChecked(), pumps.right.fD);
 
-        tfD_graph->ChartIncrement_if( !ui->btn_tfD_lc->isChecked(),  pumps.left.tfD,
+        tfD_graph->ChartIncrement_if( !ui->btn_tfD_lc->isChecked(), pumps.left.tfD,
                                       !ui->btn_tfD_rc->isChecked(), pumps.right.tfD);
 
-        tfdS_graph->ChartIncrement_if( !ui->btn_tfdS_lc->isChecked(),  pumps.left.tfdS,
+        tfdS_graph->ChartIncrement_if( !ui->btn_tfdS_lc->isChecked(), pumps.left.tfdS,
                                        !ui->btn_tfdS_rc->isChecked(), pumps.right.tfdS);
 
-        CAN_graph->ChartIncrement_if( !ui->btn_CAN_lc->isChecked(),  pumps.left.CAN,
+        CAN_graph->ChartIncrement_if( !ui->btn_CAN_lc->isChecked(), pumps.left.CAN,
                                       !ui->btn_CAN_rc->isChecked(), pumps.right.CAN);
         is_new_pump = false;
     }
@@ -535,17 +557,26 @@ void GraphPlot::SetGraphsShow()
     else                           ui->view_pB->hide();
     if( ui->chb_fS->isChecked() )  ui->view_fS->show();
     else                           ui->view_fS->hide();
-    if( ui->chb_pP->isChecked() )   ui->view_pP->show();
-    else                            ui->view_pP->hide();
-    if( ui->chb_fD->isChecked() )   ui->view_fD->show();
-    else                            ui->view_fD->hide();
-    if( ui->chb_tfD->isChecked() )  ui->view_tfD->show();
-    else                            ui->view_tfD->hide();
-    if( ui->chb_tfdS->isChecked())  ui->view_tfdS->show();
-    else                            ui->view_tfdS->hide();
-    if( ui->chb_CAN->isChecked() )  ui->view_CAN->show();
-    else                            ui->view_CAN->hide();
-
+    if( ui->chb_pP->isChecked() )  ui->view_pP->show();
+    else                           ui->view_pP->hide();
+    if( ui->chb_fD->isChecked() )  ui->view_fD->show();
+    else                           ui->view_fD->hide();
+    if( ui->chb_tfD->isChecked() ) ui->view_tfD->show();
+    else                           ui->view_tfD->hide();
+    if( ui->chb_tfdS->isChecked()) ui->view_tfdS->show();
+    else                           ui->view_tfdS->hide();
+    if( ui->chb_CAN->isChecked() ) ui->view_CAN->show();
+    else                           ui->view_CAN->hide();
+    if( ui->chb_fT->isChecked() )  ui->view_fT->show();
+    else                           ui->view_fT->hide();
+    if( ui->chb_tfT->isChecked() ) ui->view_tfT->show();
+    else                           ui->view_tfT->hide();
+    if( ui->chb_fiR->isChecked() ) ui->view_fiR->show();
+    else                           ui->view_fiR->hide();
+    if( ui->chb_fiP->isChecked() ) ui->view_fiP->show();
+    else                           ui->view_fiP->hide();
+    if( ui->chb_nN->isChecked() )  ui->view_nN->show();
+    else                           ui->view_nN->hide();
 }
 void GraphPlot::SetGraphDiap()
 {
@@ -584,6 +615,21 @@ void GraphPlot::SetGraphDiap()
     }
     else if( name.contains("_CAN_") ) {
         CAN_graph->SetRange( QPoint(ui->sb_CAN_diap_min->value(), ui->sb_CAN_diap_max->value() ));
+    }
+    else if( name.contains("_fT_") ) {
+        fT_graph->SetRange( QPoint(ui->sb_fT_diap_min->value(), ui->sb_fT_diap_max->value() ));
+    }
+    else if( name.contains("_tfT_") ) {
+        tfT_graph->SetRange( QPoint(ui->sb_tfT_diap_min->value(), ui->sb_tfT_diap_max->value() ));
+    }
+    else if( name.contains("_fiR_") ) {
+        fiR_graph->SetRange( QPoint(ui->sb_fiR_diap_min->value(),  ui->sb_fiR_diap_max->value() ));
+    }
+    else if( name.contains("_fiP_") ) {
+        fiP_graph->SetRange( QPoint(ui->sb_fiP_diap_min->value(),  ui->sb_fiP_diap_max->value() ));
+    }
+    else if( name.contains("_nN_") ) {
+        nN_graph->SetRange( QPoint(ui->sb_nN_diap_min->value(),  ui->sb_nN_diap_max->value() ));
     }
 }
 void GraphPlot::SetGraphStickCount()
@@ -624,6 +670,21 @@ void GraphPlot::SetGraphStickCount()
     else if( name.contains("_CAN_") ) {
         CAN_graph->SetTickCount( sb->value() );
     }
+    else if( name.contains("_fT_") ) {
+        fT_graph->SetTickCount( sb->value() );
+    }
+    else if( name.contains("_tfT_") ) {
+        tfT_graph->SetTickCount( sb->value() );
+    }
+    else if( name.contains("_fiR_") ) {
+        fiR_graph->SetTickCount( sb->value() );
+    }
+    else if( name.contains("_fiP_") ) {
+        fiP_graph->SetTickCount( sb->value() );
+    }
+    else if( name.contains("_nN_") ) {
+        nN_graph->SetTickCount( sb->value() );
+    }
 }
 
 void GraphPlot::StartCylinderGraphs()
@@ -644,13 +705,13 @@ void GraphPlot::StartCylinderGraphs()
     ui->view_fS->setRenderHint( QPainter::Antialiasing);
     ui->view_sY->setRenderHint( QPainter::Antialiasing);
 
-    connect( timer, &QTimer::timeout, this, &GraphPlot::handle_pA_pB_fY_sY );
+    connect( timer, &QTimer::timeout, this, &GraphPlot::handle_pA_pB_fY_sY_fS );
     ui->btn_cylinder_start->setEnabled(false);
     ui->btn_cylinder_stop->setEnabled(true);
 }
 void GraphPlot::StopCylinderGraphs()
 {
-    disconnect( timer, &QTimer::timeout, this, &GraphPlot::handle_pA_pB_fY_sY );
+    disconnect( timer, &QTimer::timeout, this, &GraphPlot::handle_pA_pB_fY_sY_fS );
     ui->btn_cylinder_start->setEnabled(true);
     ui->btn_cylinder_stop->setEnabled(false);
 }
@@ -684,223 +745,48 @@ void GraphPlot::StopPumpGraphs()
     ui->btn_pump_stop->setEnabled(false);
 }
 
-void GraphPlot::handleCalcTabPlot()
+void GraphPlot::StartSensorGraphs()
 {
-    qreal x_PistonLoss = ui->tab_calc_gv_piston_loss->chart()->plotArea().width() / ax_X_PistonLoss->tickCount();
-    qreal y_PistonLoss = ( ax_X_PistonLoss->max().toMSecsSinceEpoch() - ax_X_PistonLoss->min().toMSecsSinceEpoch() ) / ax_X_PistonLoss->tickCount();
-    timePistonLoss = timePistonLoss.addMSecs(y_PistonLoss);
-
-    qreal x_StockLoss = ui->tab_calc_gv_stock_loss->chart()->plotArea().width() / ax_X_StockLoss->tickCount();
-    qreal y_StockLoss = ( ax_X_StockLoss->max().toMSecsSinceEpoch() - ax_X_StockLoss->min().toMSecsSinceEpoch() ) / ax_X_StockLoss->tickCount();
-    timeStockLoss = timeStockLoss.addMSecs(y_StockLoss);
-
-    qreal x_DiffForce = ui->tab_calc_gv_diff_force->chart()->plotArea().width() / ax_X_DiffForce->tickCount();
-    qreal y_DiffForce = ( ax_X_DiffForce->max().toMSecsSinceEpoch() - ax_X_DiffForce->min().toMSecsSinceEpoch() ) / ax_X_DiffForce->tickCount();
-    timeDiffForce = timeDiffForce.addMSecs(y_DiffForce);
-
-
-    if( is_PLC_CALC_new_data ){
-        ser_piston_loss_left->append(timePistonLoss.toMSecsSinceEpoch(), calc_left.GetPistonLosses());
-        ser_piston_loss_right->append(timePistonLoss.toMSecsSinceEpoch(), calc_right.GetPistonLosses());
-
-        ser_Stock_loss_left->append(timeStockLoss.toMSecsSinceEpoch(), calc_left.GetStockLosses());
-        ser_Stock_loss_right->append(timeStockLoss.toMSecsSinceEpoch(), calc_right.GetStockLosses());
-
-        ser_Diff_Force_left->append(timeDiffForce.toMSecsSinceEpoch(), calc_left.GetForce());
-        ser_Diff_Force_right->append(timeDiffForce.toMSecsSinceEpoch(), calc_right.GetForce());
-
-        is_PLC_CALC_new_data = false;
-    }else{
-
-        ser_piston_loss_left->append(timePistonLoss.toMSecsSinceEpoch(), QRandomGenerator::global()->bounded(0,20));
-        ser_piston_loss_right->append(timePistonLoss.toMSecsSinceEpoch(), QRandomGenerator::global()->bounded(0,20));
-        ser_Stock_loss_left->append(timeStockLoss.toMSecsSinceEpoch(), QRandomGenerator::global()->bounded(0,20));
-        ser_Stock_loss_right->append(timeStockLoss.toMSecsSinceEpoch(), QRandomGenerator::global()->bounded(0,20));
-        ser_Diff_Force_left->append(timeDiffForce.toMSecsSinceEpoch(), QRandomGenerator::global()->bounded(0,20));
-        ser_Diff_Force_right->append(timeDiffForce.toMSecsSinceEpoch(), QRandomGenerator::global()->bounded(0,20));
-
-    }
-
-    chartDiffForce->scroll( x_DiffForce, 0 );
-    chartPistonLoss->scroll( x_PistonLoss, 0 );
-    chartStockLoss->scroll( x_StockLoss, 0 );
+    fT_graph->Configure( "Расход, л/мин",   QPoint(ui->sb_fT_diap_min->value(),  ui->sb_fT_diap_max->value() ),  ui->sb_fT_discret->value());
+    tfT_graph->Configure("Температура, °",  QPoint(ui->sb_tfT_diap_min->value(), ui->sb_tfT_diap_max->value() ), ui->sb_tfT_discret->value());
+    ui->view_fT->setChart(   fT_graph->chart);
+    ui->view_tfT->setChart( tfT_graph->chart );
+    ui->view_fT->setRenderHint( QPainter::Antialiasing);
+    ui->view_tfT->setRenderHint(QPainter::Antialiasing);
+    connect( timer, &QTimer::timeout, this, &GraphPlot::handle_fT_tfT );
+    ui->btn_sensor_start->setEnabled(false);
+    ui->btn_sensor_stop->setEnabled(true);
+}
+void GraphPlot::StopSensorGraphs()
+{
+    disconnect( timer, &QTimer::timeout, this, &GraphPlot::handle_fT_tfT );
+    ui->btn_sensor_start->setEnabled(true);
+    ui->btn_sensor_stop->setEnabled(false);
 }
 
-void GraphPlot::TabGraphShowingCalc()
+void GraphPlot::StartCalcGraphs()
 {
-    if( ui->cb_calc_tab_diff_force->isChecked() ){
-        ui->tab_calc_gv_diff_force->show();
-    }
-    else{
-        ui->tab_calc_gv_diff_force->hide();
-    }
-    if( ui->cb_calc_tab_piston_loss->isChecked() ){
-        ui->tab_calc_gv_piston_loss->show();
-    }
-    else{
-        ui->tab_calc_gv_piston_loss->hide();
-    }
-    if( ui->cb_calc_tab_stock_loss->isChecked() ){
-        ui->tab_calc_gv_stock_loss->show();
-    }
-    else{
-        ui->tab_calc_gv_stock_loss->hide();
-    }
+    fiR_graph->Configure("Потери, %",  QPoint(ui->sb_fiR_diap_min->value(),  ui->sb_fiR_diap_max->value() ),  ui->sb_fiR_discret->value());
+    fiP_graph->Configure("Потери, %",  QPoint(ui->sb_fiP_diap_min->value(),  ui->sb_fiP_diap_max->value() ),  ui->sb_fiP_discret->value());
+    nN_graph->Configure("Отношение, %",QPoint(ui->sb_nN_diap_min->value(),  ui->sb_nN_diap_max->value() ),  ui->sb_nN_discret->value());
+    ui->view_fiR->setChart( fiR_graph->chart);
+    ui->view_fiP->setChart( fiP_graph->chart);
+    ui->view_nN->setChart(  nN_graph->chart );
+    ui->view_fiR->setRenderHint( QPainter::Antialiasing);
+    ui->view_fiP->setRenderHint(QPainter::Antialiasing);
+    ui->view_nN->setRenderHint(QPainter::Antialiasing);
+    connect( timer, &QTimer::timeout, this, &GraphPlot::handle_fiR_fiP_nN );
+    ui->btn_calc_start->setEnabled(false);
+    ui->btn_calc_stop->setEnabled(true);
+}
+void GraphPlot::StopCalcGraphs()
+{
+    disconnect( timer, &QTimer::timeout, this, &GraphPlot::handle_fiR_fiP_nN );
+    ui->btn_calc_start->setEnabled(true);
+    ui->btn_calc_stop->setEnabled(false);
 }
 
-void GraphPlot::SetGraphDiffForce()
-{
-    ser_Diff_Force_left = new QLineSeries();
-    ser_Diff_Force_left->setName("Левый");
-
-    ser_Diff_Force_right = new QLineSeries();
-    ser_Diff_Force_right->setName("Правый");
-
-    QDateTime temp_time = timeDiffForce;
-    ser_Diff_Force_left->append(timeDiffForce.toMSecsSinceEpoch(), 0);
-    ser_Diff_Force_right->append(timeDiffForce.toMSecsSinceEpoch(), 0);
-
-    for( int i = 1; i <= 10; i++ ){
-        timeDiffForce = timeDiffForce.addSecs(1);
-        ser_Diff_Force_left->append(timeDiffForce.toMSecsSinceEpoch(), 0);
-        ser_Diff_Force_right->append(timeDiffForce.toMSecsSinceEpoch(), 0);
-    }
-
-    ax_X_DiffForce = new QDateTimeAxis;
-    ax_Y_DiffForce = new QValueAxis;
-    ax_X_DiffForce->setTitleText("Время, сек");
-    ax_X_DiffForce->setFormat("hh:mm:ss");
-    ax_Y_DiffForce->setTitleText("Отношение");
-
-    chartDiffForce = new QChart();
-
-    chartDiffForce = new QChart();
-    chartDiffForce->legend()->setAlignment(Qt::AlignRight);
-    chartDiffForce->legend()->show();
-    chartDiffForce->addSeries(ser_Diff_Force_left);
-    chartDiffForce->addSeries(ser_Diff_Force_right);
-    chartDiffForce->addAxis(ax_X_DiffForce, Qt::AlignBottom);
-    chartDiffForce->addAxis(ax_Y_DiffForce, Qt::AlignLeft);
-    chartDiffForce->setAnimationOptions(QChart::SeriesAnimations);
-
-    ser_Diff_Force_left->attachAxis( ax_X_DiffForce );
-    ser_Diff_Force_left->attachAxis( ax_Y_DiffForce );
-
-    ser_Diff_Force_right->attachAxis( ax_X_DiffForce );
-    ser_Diff_Force_right->attachAxis( ax_Y_DiffForce );
-
-    ax_X_DiffForce->setRange(temp_time, timeDiffForce.addSecs(1));
-    ax_Y_DiffForce->setRange(0, 20);
-    ax_X_DiffForce->setTickCount(10);
-    ax_Y_DiffForce->setTickCount(5);
-    chartDiffForce->setTitle("Отношение эталонного дифф. усилия к реальному");
-
-    ui->tab_calc_gv_diff_force->setChart(chartDiffForce);
-    ui->tab_calc_gv_diff_force->setRenderHint(QPainter::Antialiasing);
-}
-void GraphPlot::SetGraphStockLoss()
-{
-    ser_Stock_loss_left = new QLineSeries();
-    ser_Stock_loss_left->setName("Левый");
-
-    ser_Stock_loss_right = new QLineSeries();
-    ser_Stock_loss_right->setName("Правый");
-
-    QDateTime temp_time = timeStockLoss;
-    ser_Stock_loss_left->append(timeStockLoss.toMSecsSinceEpoch(), 0);
-    ser_Stock_loss_right->append(timeStockLoss.toMSecsSinceEpoch(), 0);
-
-    for( int i = 1; i <= 10; i++ ){
-        timeStockLoss = timeStockLoss.addSecs(1);
-        ser_Stock_loss_left->append(timeStockLoss.toMSecsSinceEpoch(), 0);
-        ser_Stock_loss_right->append(timeStockLoss.toMSecsSinceEpoch(), 0);
-    }
-
-    ax_X_StockLoss = new QDateTimeAxis;
-    ax_Y_StockLoss = new QValueAxis;
-    ax_X_StockLoss->setTitleText("Время, сек");
-    ax_X_StockLoss->setFormat("hh:mm:ss");
-    ax_Y_StockLoss->setTitleText("Потери, %");
-
-    chartStockLoss = new QChart();
-
-    chartStockLoss = new QChart();
-    chartStockLoss->legend()->setAlignment(Qt::AlignRight);
-    chartStockLoss->legend()->show();
-    chartStockLoss->addSeries(ser_Stock_loss_left);
-    chartStockLoss->addSeries(ser_Stock_loss_right);
-    chartStockLoss->addAxis(ax_X_StockLoss, Qt::AlignBottom);
-    chartStockLoss->addAxis(ax_Y_StockLoss, Qt::AlignLeft);
-    chartStockLoss->setAnimationOptions(QChart::SeriesAnimations);
-
-    ser_Stock_loss_left->attachAxis( ax_X_StockLoss );
-    ser_Stock_loss_left->attachAxis( ax_Y_StockLoss );
-
-    ser_Stock_loss_right->attachAxis( ax_X_StockLoss );
-    ser_Stock_loss_right->attachAxis( ax_Y_StockLoss );
-
-    ax_X_StockLoss->setRange(temp_time, timeStockLoss.addSecs(1));
-    ax_Y_StockLoss->setRange(0, 20);
-    ax_X_StockLoss->setTickCount(10);
-    ax_Y_StockLoss->setTickCount(5);
-    chartStockLoss->setTitle("Процент потерь расхода в штоковой полости");
-
-    ui->tab_calc_gv_stock_loss->setChart(chartStockLoss);
-    ui->tab_calc_gv_stock_loss->setRenderHint(QPainter::Antialiasing);
-}
-void GraphPlot::SetGraphPistonLoss()
-{
-    ser_piston_loss_left = new QLineSeries();
-    ser_piston_loss_left->setName("Левый");
-
-    ser_piston_loss_right = new QLineSeries();
-    ser_piston_loss_right->setName("Правый");
-
-     QDateTime temp_time = timePistonLoss;
-     ser_piston_loss_left->append(timePistonLoss.toMSecsSinceEpoch(), 0);
-     ser_piston_loss_right->append(timePistonLoss.toMSecsSinceEpoch(), 0);
-
-     for( int i = 1; i <= 10; i++ ){
-         timePistonLoss = timePistonLoss.addSecs(1);
-         ser_piston_loss_left->append(timePistonLoss.toMSecsSinceEpoch(), 0);
-         ser_piston_loss_right->append(timePistonLoss.toMSecsSinceEpoch(), 0);
-     }
-
-     ax_X_PistonLoss = new QDateTimeAxis;
-     ax_Y_PistonLoss = new QValueAxis;
-     ax_X_PistonLoss->setTitleText("Время, сек");
-     ax_X_PistonLoss->setFormat("hh:mm:ss");
-     ax_Y_PistonLoss->setTitleText("Потери, %");
-
-     chartPistonLoss = new QChart();
-
-     chartPistonLoss = new QChart();
-     chartPistonLoss->legend()->setAlignment(Qt::AlignRight);
-     chartPistonLoss->legend()->show();
-     chartPistonLoss->addSeries(ser_piston_loss_left);
-     chartPistonLoss->addSeries(ser_piston_loss_right);
-     chartPistonLoss->addAxis(ax_X_PistonLoss, Qt::AlignBottom);
-     chartPistonLoss->addAxis(ax_Y_PistonLoss, Qt::AlignLeft);
-     chartPistonLoss->setAnimationOptions(QChart::SeriesAnimations);
-
-     ser_piston_loss_left->attachAxis( ax_X_PistonLoss );
-     ser_piston_loss_left->attachAxis( ax_Y_PistonLoss );
-
-     ser_piston_loss_right->attachAxis( ax_X_PistonLoss );
-     ser_piston_loss_right->attachAxis( ax_Y_PistonLoss );
-
-     ax_X_PistonLoss->setRange(temp_time, timePistonLoss.addSecs(1));
-     ax_Y_PistonLoss->setRange(0, 20);
-     ax_X_PistonLoss->setTickCount(10);
-     ax_Y_PistonLoss->setTickCount(5);
-     chartPistonLoss->setTitle("Процент потерь расхода в поршневой полости");
-
-     ui->tab_calc_gv_piston_loss->setChart(chartPistonLoss);
-     ui->tab_calc_gv_piston_loss->setRenderHint(QPainter::Antialiasing);
-
-}
-
-void GraphPlot::SensorDataUpdate(SensorPack pack)
+void GraphPlot::update_sensor(sensor_pack pack)
 {
     double _ft_R = 0.0;
     if( ui->chb_filt_fT_R->isChecked() ){
@@ -944,11 +830,11 @@ void GraphPlot::SensorDataUpdate(SensorPack pack)
     sens_data.tfT_L = map( _tfT_L, 0, 4095, -10, 80 );
     is_new_sensor = true;
 }
-
-
-void GraphPlot::update_cylinder(plc_cylinder data)
+void GraphPlot::update_plc(plc_pack data)
 {
-    cylinders = data;
+    cylinders = data.cylinders;
+    pumps = data.pumps;
     is_new_cylinder = true;
+    is_new_pump = true;
 }
 

@@ -6,15 +6,11 @@ Sensor::Sensor( quint16 _bind_port, QHostAddress _host, quint16 _send_port, QObj
     socket = new QUdpSocket();
     socket->setSocketOption(QAbstractSocket::LowDelayOption, QVariant(1));
     socket->bind( bind_port, QUdpSocket::ShareAddress );
-    if ( socket->open(QIODevice::ReadWrite) )
-    {
+    if ( socket->open(QIODevice::ReadWrite) ){
         socket->readAll();
         connect( socket, &QUdpSocket::readyRead, this, &Sensor::Receive );
-
-    }
-    else
-    {
-        qDebug() << "Sencor Connector socket not open";
+    } else  {
+        qDebug() << "Sensor Connector socket not open";
     }
     packNumber = 0;
     millisec = 0;
@@ -101,7 +97,6 @@ void Sensor::Receive()
         }
     }
 }
-
 void Sensor::SendReceivedPack()
 {
     qint64 currentTime = GetCurrentTime1();
@@ -111,12 +106,12 @@ void Sensor::SendReceivedPack()
     }
     else
     {
-        SensorPack pack;
+        sensor_pack pack;
         pack.adc1_data = adc1_data;
         pack.adc3_data = adc3_data;
         pack.adc1_filtered_data = adc1_filtered_data;
         pack.adc3_filtered_data = adc3_filtered_data;
         pack.millisec = millisec;
-        emit sensorPackReceive( pack );
+        emit ready_sensor( pack );
     }
 }
