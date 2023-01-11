@@ -36,4 +36,4 @@ git clone https://github.com/glahiator/GraphPlot.git
 
 ## Copyright & License
 - Copyright (©) 2022 by [glahiator](https://github.com/glahiator)
-- Licensed under the terms of the [GNU Lesser General Public License v3.0](./LICENSE)
+- Licensed under the terms of the [GNU Lesser General Public License v3.0](./LICENSE.txt)
