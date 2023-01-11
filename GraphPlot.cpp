@@ -134,19 +134,6 @@ GraphPlot::GraphPlot(QWidget *parent)
         isDemo_fiR_fiP_nN = ui->chb_demo_calc->isChecked();
     });
 
-
-//    ui->themeComboBox->addItem("Light", QChart::ChartThemeLight);
-//    ui->themeComboBox->addItem("Blue Cerulean", QChart::ChartThemeBlueCerulean);
-//    ui->themeComboBox->addItem("Dark", QChart::ChartThemeDark);
-//    ui->themeComboBox->addItem("Brown Sand", QChart::ChartThemeBrownSand);
-//    ui->themeComboBox->addItem("Blue NCS", QChart::ChartThemeBlueNcs);
-//    ui->themeComboBox->addItem("High Contrast", QChart::ChartThemeHighContrast);
-//    ui->themeComboBox->addItem("Blue Icy", QChart::ChartThemeBlueIcy);
-//    ui->themeComboBox->addItem("Qt", QChart::ChartThemeQt);
-
-////    ui->themeComboBox->setCurrentIndex(4);
-//    connect( ui->themeComboBox, qOverload<int>(&QComboBox::currentIndexChanged), this, &GraphPlot::updateUI );
-
     QPalette pal = qApp->palette();
     pal.setColor(QPalette::Window, QRgb(0xf0f0f0));
     pal.setColor(QPalette::WindowText, QRgb(0x404044));
@@ -171,20 +158,11 @@ GraphPlot::~GraphPlot()
 
 void GraphPlot::updateUI()
 {
-    //![6]
     QChart::ChartTheme theme = static_cast<QChart::ChartTheme>(0);
-//                ui->themeComboBox->itemData(ui->themeComboBox->currentIndex()).toInt());
-    //![6]
-
-    //![7]
     ui->view_fT->chart()->setTheme(theme);
     ui->view_tfT->chart()->setTheme(theme);
     ui->view_pA->chart()->setTheme(theme);
-    //![7]
 
-
-    // Set palette colors based on selected theme
-    //![8]
     QPalette pal = window()->palette();
     if (theme == QChart::ChartThemeLight) {
         pal.setColor(QPalette::Window, QRgb(0xf0f0f0));

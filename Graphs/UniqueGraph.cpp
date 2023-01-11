@@ -2,15 +2,12 @@
 
 UniqueGraph::UniqueGraph(QString _title, QObject *parent) : QObject(parent)
 {
-
     title = _title;
 }
 
 void UniqueGraph::Configure(QString _yAxisText , QPoint _yRange, int _yTickCount)
 {
     QDateTime all(QDateTime::currentDateTime().date(), QDateTime::currentDateTime().time().addSecs(-10));
-
-
     time =  all;
     yAxisText = _yAxisText;
     series_left = new QLineSeries();

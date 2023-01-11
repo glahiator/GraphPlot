@@ -51,28 +51,3 @@ double constrain(double value,double low,double high)
 {
     return ((value)<(low)?(low):((value)>(high)?(high):(value)));
 }
-
-
-
-
-/*
- *
- *         QFile instrWorkTime(instrWorkDataName);
-        if (instrWorkTime.open(QIODevice::Append))
-        {
-            QString strData;
-            QString date = QDateTime::currentDateTime().toString("dd/MM/yy hh:mm:ss");
-            strData = date + "," + ManipNames[manip_ident] + "," +
-                                   ManipCommands[ utils_ident ] + "," +
-                                   QString::number(instr_number) + "\n" ;
-            instrWorkTime.write(strData.toLocal8Bit());
-            instrWorkTime.close();
-    //        qDebug() << instrWorkDataName <<  "has been saved";
-        }
-        else
-        {
-            qDebug() << "Error to open for save" << instrWorkDataName;
-            return;
-        }
- *
- * */
