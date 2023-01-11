@@ -42,8 +42,8 @@ GraphPlot::GraphPlot(QWidget *parent)
 
     sensor = new Sensor(2607, QHostAddress("192.168.1.20"), 8888, this);
     siemens = new PLC(  2688, QHostAddress("192.168.1.31"), 8888, this);
-    connect( sensor,  &Sensor::ready_sensor, this, &GraphPlot::update_sensor );
-    connect( siemens, &PLC::ready_plc,       this, &GraphPlot::update_plc );
+    connect( sensor,  &Sensor::ready_sensor, this, &GraphPlot::UpdateSensor );
+    connect( siemens, &PLC::ready_plc,       this, &GraphPlot::UpdatePlc );
 
     connect( ui->sb_pA_diap_max, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphDiap );
     connect( ui->sb_pA_diap_min, QOverload<int>::of(&QSpinBox::valueChanged), this, &GraphPlot::SetGraphDiap );
@@ -139,7 +139,7 @@ GraphPlot::GraphPlot(QWidget *parent)
     pal.setColor(QPalette::WindowText, QRgb(0x404044));
     qApp->setPalette(pal);
 
-    updateUI();
+    UpdateUI();
 
     timer = new QTimer();
     timer->stop();
@@ -156,7 +156,7 @@ GraphPlot::~GraphPlot()
     delete ui;
 }
 
-void GraphPlot::updateUI()
+void GraphPlot::UpdateUI()
 {
     QChart::ChartTheme theme = static_cast<QChart::ChartTheme>(0);
     ui->view_fT->chart()->setTheme(theme);
@@ -764,7 +764,7 @@ void GraphPlot::StopCalcGraphs()
     ui->btn_calc_stop->setEnabled(false);
 }
 
-void GraphPlot::update_sensor(sensor_pack pack)
+void GraphPlot::UpdateSensor(sensor_pack pack)
 {
     double _ft_R = 0.0;
     if( ui->chb_filt_fT_R->isChecked() ){
@@ -808,7 +808,7 @@ void GraphPlot::update_sensor(sensor_pack pack)
     sens_data.tfT_L = map( _tfT_L, 0, 4095, -10, 80 );
     is_new_sensor = true;
 }
-void GraphPlot::update_plc(plc_pack data)
+void GraphPlot::UpdatePlc(plc_pack data)
 {
     cylinders = data.cylinders;
     pumps = data.pumps;

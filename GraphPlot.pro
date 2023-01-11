@@ -4,31 +4,25 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++14
 
-# You can make your code fail to compile if it uses deprecated APIs.
-# In order to do so, uncomment the following line.
-#DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
-
 SOURCES += \
-    CalculateCylinder.cpp \
-    Graphs/UniqueGraph.cpp \
-    PLC.cpp \
-    Sensor.cpp \
-    Utilites.cpp \
-    main.cpp \
-    GraphPlot.cpp
- #    snap7.cpp
+    src/CalculateCylinder.cpp \
+    src/UniqueGraph.cpp \
+    src/PLC.cpp \
+    src/Sensor.cpp \
+    src/Utilites.cpp \
+    src/main.cpp \
+    src/GraphPlot.cpp
 
 HEADERS += \
-    CalculateCylinder.h \
-    GraphPlot.h \
-    Graphs/UniqueGraph.h \
-    PLC.h \
-    Sensor.h \
-    Utilites.h
- #    snap7.h
+    include/CalculateCylinder.h \
+    include/GraphPlot.h \
+    include/UniqueGraph.h \
+    include/PLC.h \
+    include/Sensor.h \
+    include/Utilites.h
 
 FORMS += \
-    GraphPlot.ui
+    res/GraphPlot.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -39,9 +33,10 @@ DISTFILES += \
     TODO
 
 RESOURCES += \
-    pic.qrc
+    res/pic.qrc
 
-win32: LIBS += -L$$PWD/./ -lsnap7
+win32: LIBS += -L$$PWD/./lib/ -lsnap7
 
-INCLUDEPATH += $$PWD/.
-DEPENDPATH += $$PWD/.
+INCLUDEPATH += $$PWD/include/.
+INCLUDEPATH += $$PWD/lib/.
+DEPENDPATH += $$PWD/lib/.

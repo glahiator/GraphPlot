@@ -45,15 +45,15 @@
     },
     "pA_graph": {
         "isChecked": true,
-        "y_diap_max": 250,
+        "y_diap_max": 46,
         "y_diap_min": 0,
         "y_tick": 6
     },
     "pB_graph": {
         "isChecked": true,
-        "y_diap_max": 82,
+        "y_diap_max": 50,
         "y_diap_min": 0,
-        "y_tick": 6
+        "y_tick": 8
     },
     "sY_graph": {
         "isChecked": true,

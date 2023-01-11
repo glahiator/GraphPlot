@@ -17,9 +17,9 @@
 #include "Sensor.h"
 #include "PLC.h"
 #include "CalculateCylinder.h"
-#include "Graphs/UniqueGraph.h"
+#include "UniqueGraph.h"
 
-const QString configFile = QString("../sensor.json");
+const QString configFile = QString("../res/sensor.json");
 
 
 QT_BEGIN_NAMESPACE
@@ -80,11 +80,11 @@ public:
     void SaveConfigure();
 
     // receive slots
-    void update_sensor( sensor_pack pack );
-    void update_plc( plc_pack data );
+    void UpdateSensor( sensor_pack pack );
+    void UpdatePlc( plc_pack data );
 
 private Q_SLOTS:
-    void updateUI();
+    void UpdateUI();
 
 private:
     Ui::GraphPlot *ui;
