@@ -32,7 +32,7 @@
 git clone https://github.com/glahiator/GraphPlot.git
 ```
 - Открыть GraphPlot.pro в редакторе QtCreator
-- Добавить каталог build в репозитории в качестве каталога сборки проекта 
+- Собрать и запустить
 
 ## Copyright & License
 - Copyright (©) 2022 by [glahiator](https://github.com/glahiator)
